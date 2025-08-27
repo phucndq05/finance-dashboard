@@ -1,0 +1,7 @@
+/* General body styling for a clean look */
+body {
+    font-family: sans-serif;
+    background-color: #f4f4f9;
+    color: #333;
+    line-height: 1.6;
+}
