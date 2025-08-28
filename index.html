@@ -1,14 +1,131 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Personal Finance Dashboard</title>
+
     <link rel="stylesheet" href="style.css">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+        integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2BFYhGDFBLHGYUSxITxMRXo/WGwQo/6aNdQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
+
 <body>
-    <h1>My Finance Dashboard</h1>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-wallet"></i> My Personal Finance Dashboard 💰</h1>
+        </header>
+
+        <main>
+            <section class="summary-container">
+                <div class="summary-card" id="balance">
+                    <h2><i class="fas fa-balance-scale"></i> Balance</h2>
+                    <p>$0.00</p>
+                </div>
+                <div class="summary-card" id="income">
+                    <h2><i class="fas fa-arrow-alt-circle-up"></i> Income</h2>
+                    <p>$0.00</p>
+                </div>
+                <div class="summary-card" id="expense">
+                    <h2><i class="fas fa-arrow-alt-circle-down"></i> Expense</h2>
+                    <p>$0.00</p>
+                </div>
+            </section>
+
+            <section class="transaction-container">
+                <h2>Transactions <i class="fas fa-list-alt"></i></h2>
+                <ul id="transaction-list">
+                    <li class="transaction-item expense-item">
+                        <div class="transaction-info">
+                            <span class="icon-indicator expense-icon"><i class="fas fa-minus-circle"></i></span>
+                            <span class="transaction-details">
+                                <span class="transaction-description">Lunch with colleagues</span>
+                                <small class="transaction-date">2025-08-28</small>
+                            </span>
+                        </div>
+                        <span class="transaction-amount">-$15.00</span>
+                    </li>
+                    <li class="transaction-item income-item">
+                        <div class="transaction-info">
+                            <span class="icon-indicator income-icon"><i class="fas fa-plus-circle"></i></span>
+                            <span class="transaction-details">
+                                <span class="transaction-description">Monthly Salary</span>
+                                <small class="transaction-date">2025-08-27</small>
+                            </span>
+                        </div>
+                        <span class="transaction-amount">+$2000.00</span>
+                    </li>
+                    <li class="transaction-item expense-item">
+                        <div class="transaction-info">
+                            <span class="icon-indicator expense-icon"><i class="fas fa-minus-circle"></i></span>
+                            <span class="transaction-details">
+                                <span class="transaction-description">Groceries</span>
+                                <small class="transaction-date">2025-08-26</small>
+                            </span>
+                        </div>
+                        <span class="transaction-amount">-$75.50</span>
+                    </li>
+                    <li class="transaction-item expense-item">
+                        <div class="transaction-info">
+                            <span class="icon-indicator expense-icon"><i class="fas fa-minus-circle"></i></span>
+                            <span class="transaction-details">
+                                <span class="transaction-description">Internet Bill</span>
+                                <small class="transaction-date">2025-08-25</small>
+                            </span>
+                        </div>
+                        <span class="transaction-amount">-$50.00</span>
+                    </li>
+                    <li class="transaction-item income-item">
+                        <div class="transaction-info">
+                            <span class="icon-indicator income-icon"><i class="fas fa-plus-circle"></i></span>
+                            <span class="transaction-details">
+                                <span class="transaction-description">Freelance Project</span>
+                                <small class="transaction-date">2025-08-24</small>
+                            </span>
+                        </div>
+                        <span class="transaction-amount">+$500.00</span>
+                    </li>
+                </ul>
+            </section>
+
+            <section class="form-container">
+                <h2>Add New Transaction <i class="fas fa-plus-square"></i></h2>
+                <form id="transaction-form">
+                    <div class="form-control">
+                        <label>Type</label>
+                        <div class="radio-container">
+                            <div class="radio-option">
+                                <input type="radio" id="type-income" name="type" value="income" checked>
+                                <label for="type-income">Income</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="type-expense" name="type" value="expense">
+                                <label for="type-expense">Expense</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-control">
+                        <label for="date">Date</label>
+                        <input type="date" id="date" required>
+                    </div>
+                    <div class="form-control">
+                        <label for="description">Description</label>
+                        <input type="text" id="description" placeholder="Enter description..." required>
+                    </div>
+                    <div class="form-control">
+                        <label for="amount">Amount</label>
+                        <input type="number" id="amount" placeholder="Enter a positive amount..." required>
+                    </div>
+                    <button class="btn"><i class="fas fa-plus-circle"></i> Add Transaction</button>
+                </form>
+            </section>
+        </main>
+    </div>
 
     <script src="script.js"></script>
 </body>
+
 </html>

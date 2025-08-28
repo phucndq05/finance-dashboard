@@ -1,7 +1,288 @@
-/* General body styling for a clean look */
+/* ==========================================================================
+   1. General Styles
+   ========================================================================== */
+
 body {
-    font-family: sans-serif;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: #f4f4f9;
     color: #333;
     line-height: 1.6;
+    margin: 0;
+    padding: 20px;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto; /* Center the container */
+    background: #fff;
+    padding: 20px 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* ==========================================================================
+   2. Header
+   ========================================================================== */
+
+header h1 {
+    color: #4a4a4a;
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 2em;
+}
+
+header h1 .fas,
+header h1 .emoji {
+    color: #007bff; /* Color for main title icon/emoji */
+}
+
+
+/* ==========================================================================
+   3. Summary Section
+   ========================================================================== */
+
+.summary-container {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 30px;
+}
+
+.summary-card {
+    flex-basis: 32%;
+    padding: 15px;
+    text-align: center;
+    border-radius: 5px;
+    color: #fff; /* White text on colored backgrounds */
+}
+
+.summary-card h2 {
+    margin: 0 0 10px;
+    font-size: 16px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.summary-card p {
+    margin: 0;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+/* --- Color coding for Summary Cards --- */
+#balance {
+    background-color: #007bff; /* Blue */
+}
+
+#income {
+    background-color: #28a745; /* Green */
+}
+
+#expense {
+    background-color: #dc3545; /* Red */
+}
+
+
+/* ==========================================================================
+   4. Transactions Section
+   ========================================================================== */
+
+.transaction-container h2,
+.form-container h2 {
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+}
+
+.transaction-container h2 .fas,
+.form-container h2 .fas {
+    margin-left: 10px;
+    color: #007bff;
+}
+
+#transaction-list {
+    list-style-type: none;
+    padding: 0;
+    margin-bottom: 30px;
+    /* Professional Touch: Make the list scrollable */
+    max-height: 300px; /* Set a maximum height for the list container */
+    overflow-y: auto;  /* Add a vertical scrollbar ONLY when the content exceeds the max-height */
+    padding-right: 10px; /* Add some padding to prevent scrollbar from overlapping content */
+}
+
+.transaction-item {
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 10px 15px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.transaction-info {
+    display: flex;
+    align-items: center;
+}
+
+.transaction-description {
+    font-weight: bold;
+}
+
+.transaction-date {
+    display: block;
+    color: #777;
+    font-size: 0.85em;
+}
+
+.income-item {
+    border-right: 5px solid #28a745;
+}
+
+.expense-item {
+    border-right: 5px solid #dc3545;
+}
+
+/* ==========================================================================
+   5. Form Section
+   ========================================================================== */
+
+.form-control {
+    margin-bottom: 15px;
+}
+
+.form-control label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.form-control input,
+.form-control select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 10px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+.btn:hover {
+    background-color: #0056b3;
+}
+
+/* --- Radio Button Styles --- */
+.radio-container {
+    display: flex;
+}
+
+.radio-option:not(:last-child) {
+    margin-right: 20px; /* Safari compatible spacing */
+}
+
+.radio-option {
+    display: flex;
+    align-items: center;
+}
+
+.radio-option label {
+    margin-left: 5px;
+    font-weight: normal;
+}
+
+/* --- Number Input Spinner Hide --- */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type=number] {
+    -moz-appearance: textfield;
+    appearance: none;
+}
+
+/* ==========================================================================
+   6. Icon Styles
+   ========================================================================== */
+
+.fas {
+    margin-right: 8px;
+}
+
+.icon-indicator {
+    margin-right: 10px;
+    display: flex;
+    align-items: center;
+    font-size: 1.2em;
+    padding: 5px;
+    border-radius: 50%;
+}
+
+.icon-indicator.expense-icon {
+    background-color: rgba(220, 53, 69, 0.3); /* User-preferred alpha */
+}
+
+.icon-indicator.income-icon {
+    background-color: rgba(40, 167, 69, 0.3); /* User-preferred alpha */
+}
+
+.icon-indicator .fas.fa-minus-circle {
+    color: #dc3545;
+}
+
+.icon-indicator .fas.fa-plus-circle {
+    color: #28a745;
+}
+
+.btn .fas {
+    color: #fff;
+}
+
+
+/* ==========================================================================
+   7. Responsive Design
+   ========================================================================== */
+
+@media (max-width: 600px) {
+    body {
+        padding: 10px;
+    }
+
+    .container {
+        padding: 15px;
+    }
+
+    .summary-container {
+        flex-direction: column;
+    }
+
+    .summary-card {
+        margin-bottom: 10px;
+    }
+
+    .radio-container {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .radio-option:not(:last-child) {
+        margin-right: 0;
+    }
 }
