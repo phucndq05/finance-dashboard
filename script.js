@@ -1,30 +1,22 @@
 // ==========================================================================
 // 1. Element Selections
 // ==========================================================================
-
-// --- Form Elements ---
 const transactionForm = document.getElementById('transaction-form');
-const transactionType = document.querySelector('input[name="type"]:checked'); // This needs to be read at submission time
 const transactionDate = document.getElementById('date');
 const transactionDescription = document.getElementById('description');
 const transactionAmount = document.getElementById('amount');
-
-// --- Transaction List ---
 const transactionList = document.getElementById('transaction-list');
+// ... (các element khác sẽ dùng sau)
 
-// --- Summary Cards ---
-const balanceDisplay = document.querySelector('#balance p');
-const incomeDisplay = document.querySelector('#income p');
-const expenseDisplay = document.querySelector('#expense p');
-
-
-// A simple console log to confirm the script is loaded
-console.log("Script loaded. Elements selected.");
 
 // ==========================================================================
-// 2. Event Listeners
+// 2. Global State (Our "Database")
 // ==========================================================================
-transactionForm.addEventListener('submit', addTransaction);
+let transactions = [
+    // Dummy data to start with
+    { id: 1, type: 'expense', date: '2025-08-28', description: 'Lunch with colleagues', amount: 15.00 },
+    { id: 2, type: 'income', date: '2025-08-27', description: 'Monthly Salary', amount: 2000.00 }
+];
 
 
 // ==========================================================================
@@ -32,46 +24,104 @@ transactionForm.addEventListener('submit', addTransaction);
 // ==========================================================================
 
 /**
+ * Adds a single transaction object to the DOM list.
+ * @param {object} transaction The transaction object to display.
+ */
+function addTransactionToDOM(transaction) {
+    // 1. Determine if it's an income or expense for styling
+    const typeClass = transaction.type === 'income' ? 'income-item' : 'expense-item';
+    const iconClass = transaction.type === 'income' ? 'income-icon' : 'expense-icon';
+    const iconTag = transaction.type === 'income' ? 'fa-plus-circle' : 'fa-minus-circle';
+    const amountSign = transaction.type === 'income' ? '+' : '-';
+
+    // 2. Create the new list item element
+    const listItem = document.createElement('li');
+
+    // 3. Add the necessary classes
+    listItem.classList.add('transaction-item', typeClass);
+
+    // 4. Set the inner HTML with the transaction data
+    // We use template literals (`) to easily embed variables
+    listItem.innerHTML = `
+        <div class="transaction-info">
+            <span class="icon-indicator ${iconClass}"><i class="fas ${iconTag}"></i></span>
+            <span class="transaction-details">
+                <span class="transaction-description">${transaction.description}</span>
+                <small class="transaction-date">${transaction.date}</small>
+            </span>
+        </div>
+        <span class="transaction-amount">${amountSign}$${transaction.amount.toFixed(2)}</span>
+    `;
+
+    // 5. Append the new item to the transaction list in the DOM
+    transactionList.prepend(listItem);
+}
+
+
+/**
  * Handles the form submission to add a new transaction.
  * @param {Event} event The event object from the form submission.
  */
 function addTransaction(event) {
-    // 1. Stop the form from submitting and reloading the page
     event.preventDefault();
 
-    // 2. Get the values from the form inputs
     const type = document.querySelector('input[name="type"]:checked').value;
     const date = transactionDate.value;
     const description = transactionDescription.value;
     const amount = parseFloat(transactionAmount.value);
 
-    // 3. Basic validation
-    if (description.trim() === '' || isNaN(amount) || amount === 0) {
-        alert('Please enter a valid description and amount.');
-        return; // Stop the function from running further
+    if (description.trim() === '' || isNaN(amount) || amount <= 0) {
+        alert('Please enter a valid description and a positive amount.');
+        return;
     }
 
-    // 4. Create a transaction object to hold the data
     const transaction = {
-        id: generateID(), // A unique ID for the transaction
+        id: generateID(),
         type: type,
         date: date,
         description: description,
-        amount: Math.abs(amount) // Store amount as a positive number
+        amount: Math.abs(amount)
     };
 
-    // 5. For now, just log the transaction object to the console
-    console.log('New Transaction Added:', transaction);
+    // Add the new transaction to our global array
+    transactions.push(transaction);
 
-    // After adding, we should clear the form fields for the next entry
+    // Add the new transaction to the DOM
+    addTransactionToDOM(transaction);
+
+    // We will update balance, income, expense here later
+    // updateSummary();
+
+    // Clear the form fields
     transactionForm.reset();
 }
 
+
+/**
+ * Initializes the application.
+ */
+function init() {
+    // Clear the list first to avoid duplicates
+    transactionList.innerHTML = '';
+    // Loop through our initial transactions and display them
+    transactions.forEach(addTransactionToDOM);
+    // updateSummary(); // We will activate this later
+}
+
+
 /**
  * Generates a random unique ID.
- * In a real app, this would be handled by a database.
  * @returns {number} A random number.
  */
 function generateID() {
     return Math.floor(Math.random() * 1000000);
 }
+
+
+// ==========================================================================
+// 4. Event Listeners and Initial Call
+// ==========================================================================
+transactionForm.addEventListener('submit', addTransaction);
+
+// Run the init function when the page loads
+init();
