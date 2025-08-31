@@ -6,7 +6,11 @@ const transactionDate = document.getElementById('date');
 const transactionDescription = document.getElementById('description');
 const transactionAmount = document.getElementById('amount');
 const transactionList = document.getElementById('transaction-list');
-// ... (các element khác sẽ dùng sau)
+
+// --- Summary Card Displays ---
+const balanceDisplay = document.querySelector('#balance p');
+const incomeDisplay = document.querySelector('#income p');
+const expenseDisplay = document.querySelector('#expense p');
 
 
 // ==========================================================================
@@ -24,24 +28,44 @@ let transactions = [
 // ==========================================================================
 
 /**
+ * Calculates total income, total expense, and balance, then updates the DOM.
+ */
+function updateSummary() {
+    // 1. Get an array of all amounts from the transactions
+    const amounts = transactions.map(transaction => transaction.amount);
+
+    // 2. Calculate total income
+    const totalIncome = amounts
+        .filter((amount, index) => transactions[index].type === 'income')
+        .reduce((sum, amount) => sum + amount, 0);
+
+    // 3. Calculate total expense
+    const totalExpense = amounts
+        .filter((amount, index) => transactions[index].type === 'expense')
+        .reduce((sum, amount) => sum + amount, 0);
+
+    // 4. Calculate the balance
+    const balance = totalIncome - totalExpense;
+
+    // 5. Update the DOM with the new values, formatted as currency
+    balanceDisplay.innerText = `$${balance.toFixed(2)}`;
+    incomeDisplay.innerText = `+$${totalIncome.toFixed(2)}`;
+    expenseDisplay.innerText = `-$${totalExpense.toFixed(2)}`;
+}
+
+
+/**
  * Adds a single transaction object to the DOM list.
  * @param {object} transaction The transaction object to display.
  */
 function addTransactionToDOM(transaction) {
-    // 1. Determine if it's an income or expense for styling
     const typeClass = transaction.type === 'income' ? 'income-item' : 'expense-item';
     const iconClass = transaction.type === 'income' ? 'income-icon' : 'expense-icon';
     const iconTag = transaction.type === 'income' ? 'fa-plus-circle' : 'fa-minus-circle';
     const amountSign = transaction.type === 'income' ? '+' : '-';
-
-    // 2. Create the new list item element
     const listItem = document.createElement('li');
-
-    // 3. Add the necessary classes
     listItem.classList.add('transaction-item', typeClass);
 
-    // 4. Set the inner HTML with the transaction data
-    // We use template literals (`) to easily embed variables
     listItem.innerHTML = `
         <div class="transaction-info">
             <span class="icon-indicator ${iconClass}"><i class="fas ${iconTag}"></i></span>
@@ -52,8 +76,6 @@ function addTransactionToDOM(transaction) {
         </div>
         <span class="transaction-amount">${amountSign}$${transaction.amount.toFixed(2)}</span>
     `;
-
-    // 5. Append the new item to the transaction list in the DOM
     transactionList.prepend(listItem);
 }
 
@@ -83,16 +105,10 @@ function addTransaction(event) {
         amount: Math.abs(amount)
     };
 
-    // Add the new transaction to our global array
     transactions.push(transaction);
-
-    // Add the new transaction to the DOM
     addTransactionToDOM(transaction);
+    updateSummary(); // <-- UPDATE THE SUMMARY AFTER ADDING
 
-    // We will update balance, income, expense here later
-    // updateSummary();
-
-    // Clear the form fields
     transactionForm.reset();
 }
 
@@ -101,11 +117,9 @@ function addTransaction(event) {
  * Initializes the application.
  */
 function init() {
-    // Clear the list first to avoid duplicates
     transactionList.innerHTML = '';
-    // Loop through our initial transactions and display them
     transactions.forEach(addTransactionToDOM);
-    // updateSummary(); // We will activate this later
+    updateSummary(); // <-- UPDATE THE SUMMARY ON PAGE LOAD
 }
 
 
@@ -123,5 +137,4 @@ function generateID() {
 // ==========================================================================
 transactionForm.addEventListener('submit', addTransaction);
 
-// Run the init function when the page loads
 init();
