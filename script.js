@@ -7,7 +7,6 @@ const transactionDescription = document.getElementById('description');
 const transactionAmount = document.getElementById('amount');
 const transactionList = document.getElementById('transaction-list');
 
-// --- Summary Card Displays ---
 const balanceDisplay = document.querySelector('#balance p');
 const incomeDisplay = document.querySelector('#income p');
 const expenseDisplay = document.querySelector('#expense p');
@@ -16,11 +15,9 @@ const expenseDisplay = document.querySelector('#expense p');
 // ==========================================================================
 // 2. Global State (Our "Database")
 // ==========================================================================
-let transactions = [
-    // Dummy data to start with
-    { id: 1, type: 'expense', date: '2025-08-28', description: 'Lunch with colleagues', amount: 15.00 },
-    { id: 2, type: 'income', date: '2025-08-27', description: 'Monthly Salary', amount: 2000.00 }
-];
+// Get transactions from local storage, or initialize as an empty array
+const savedTransactions = JSON.parse(localStorage.getItem('transactions'));
+let transactions = savedTransactions || [];
 
 
 // ==========================================================================
@@ -28,26 +25,28 @@ let transactions = [
 // ==========================================================================
 
 /**
+ * Saves the current transactions array to local storage.
+ */
+function updateLocalStorage() {
+    localStorage.setItem('transactions', JSON.stringify(transactions));
+}
+
+/**
  * Calculates total income, total expense, and balance, then updates the DOM.
  */
 function updateSummary() {
-    // 1. Get an array of all amounts from the transactions
     const amounts = transactions.map(transaction => transaction.amount);
 
-    // 2. Calculate total income
     const totalIncome = amounts
-        .filter((amount, index) => transactions[index].type === 'income')
+        .filter((_, index) => transactions[index].type === 'income')
         .reduce((sum, amount) => sum + amount, 0);
 
-    // 3. Calculate total expense
     const totalExpense = amounts
-        .filter((amount, index) => transactions[index].type === 'expense')
+        .filter((_, index) => transactions[index].type === 'expense')
         .reduce((sum, amount) => sum + amount, 0);
 
-    // 4. Calculate the balance
     const balance = totalIncome - totalExpense;
 
-    // 5. Update the DOM with the new values, formatted as currency
     balanceDisplay.innerText = `$${balance.toFixed(2)}`;
     incomeDisplay.innerText = `+$${totalIncome.toFixed(2)}`;
     expenseDisplay.innerText = `-$${totalExpense.toFixed(2)}`;
@@ -105,9 +104,17 @@ function addTransaction(event) {
         amount: Math.abs(amount)
     };
 
+    // Add to our global array
     transactions.push(transaction);
+
+    // Add to the DOM
     addTransactionToDOM(transaction);
-    updateSummary(); // <-- UPDATE THE SUMMARY AFTER ADDING
+
+    // Update summary cards
+    updateSummary();
+
+    // Save to local storage
+    updateLocalStorage(); // <-- SAVE CHANGES
 
     transactionForm.reset();
 }
@@ -119,7 +126,7 @@ function addTransaction(event) {
 function init() {
     transactionList.innerHTML = '';
     transactions.forEach(addTransactionToDOM);
-    updateSummary(); // <-- UPDATE THE SUMMARY ON PAGE LOAD
+    updateSummary();
 }
 
 
