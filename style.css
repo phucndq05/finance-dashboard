@@ -145,6 +145,31 @@ header h1 .emoji {
     border-right: 5px solid #dc3545;
 }
 
+.transaction-actions {
+    display: flex;
+    align-items: center;
+}
+
+.delete-btn {
+    background-color: transparent;
+    border: none;
+    color: #dc3545; /* Red color */
+    cursor: pointer;
+    font-size: 1.1em;
+    margin-left: 10px;
+    opacity: 0.6;
+    transition: opacity 0.3s ease;
+}
+
+.delete-btn:hover {
+    opacity: 1;
+}
+
+.delete-btn .fas {
+    /* Prevent default icon margin from affecting layout */
+    margin-right: 0; 
+}
+
 /* ==========================================================================
    5. Form Section
    ========================================================================== */
@@ -253,6 +278,26 @@ input[type=number] {
 
 .btn .fas {
     color: #fff;
+}
+
+/* Style for the circular background of transaction icons */
+.icon-indicator {
+    display: flex;
+    align-items: center;      /* Vertically center the icon */
+    justify-content: center;  /* Horizontally center the icon */
+    font-size: 1.2em;
+    margin-right: 10px;
+
+    /* Set a fixed size for a perfect circle */
+    width: 30px;
+    height: 30px;
+    
+    border-radius: 50%;
+}
+
+/* Remove conflicting margin from the icon inside the indicator */
+.icon-indicator .fas {
+    margin-right: 0;
 }
 
 

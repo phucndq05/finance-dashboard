@@ -7,6 +7,7 @@ const transactionDescription = document.getElementById('description');
 const transactionAmount = document.getElementById('amount');
 const transactionList = document.getElementById('transaction-list');
 
+// --- Summary Card Displays ---
 const balanceDisplay = document.querySelector('#balance p');
 const incomeDisplay = document.querySelector('#income p');
 const expenseDisplay = document.querySelector('#expense p');
@@ -32,18 +33,16 @@ function updateLocalStorage() {
 }
 
 /**
- * Calculates total income, total expense, and balance, then updates the DOM.
+ * (Refactored) Calculates total income, total expense, and balance, then updates the DOM.
  */
 function updateSummary() {
-    const amounts = transactions.map(transaction => transaction.amount);
+    const totalIncome = transactions
+        .filter(t => t.type === 'income')
+        .reduce((sum, t) => sum + t.amount, 0);
 
-    const totalIncome = amounts
-        .filter((_, index) => transactions[index].type === 'income')
-        .reduce((sum, amount) => sum + amount, 0);
-
-    const totalExpense = amounts
-        .filter((_, index) => transactions[index].type === 'expense')
-        .reduce((sum, amount) => sum + amount, 0);
+    const totalExpense = transactions
+        .filter(t => t.type === 'expense')
+        .reduce((sum, t) => sum + t.amount, 0);
 
     const balance = totalIncome - totalExpense;
 
@@ -65,6 +64,7 @@ function addTransactionToDOM(transaction) {
     const listItem = document.createElement('li');
     listItem.classList.add('transaction-item', typeClass);
 
+    // Updated innerHTML to include the delete button
     listItem.innerHTML = `
         <div class="transaction-info">
             <span class="icon-indicator ${iconClass}"><i class="fas ${iconTag}"></i></span>
@@ -73,7 +73,12 @@ function addTransactionToDOM(transaction) {
                 <small class="transaction-date">${transaction.date}</small>
             </span>
         </div>
-        <span class="transaction-amount">${amountSign}$${transaction.amount.toFixed(2)}</span>
+        <div class="transaction-actions">
+            <span class="transaction-amount">${amountSign}$${transaction.amount.toFixed(2)}</span>
+            <button class="delete-btn" data-id="${transaction.id}">
+                <i class="fas fa-trash-alt"></i>
+            </button>
+        </div>
     `;
     transactionList.prepend(listItem);
 }
@@ -104,21 +109,35 @@ function addTransaction(event) {
         amount: Math.abs(amount)
     };
 
-    // Add to our global array
     transactions.push(transaction);
-
-    // Add to the DOM
     addTransactionToDOM(transaction);
-
-    // Update summary cards
     updateSummary();
-
-    // Save to local storage
-    updateLocalStorage(); // <-- SAVE CHANGES
+    updateLocalStorage();
 
     transactionForm.reset();
 }
 
+/**
+ * (NEW) Handles clicks within the transaction list (for deleting items).
+ * @param {Event} event The event object.
+ */
+function handleTransactionClick(event) {
+    const deleteButton = event.target.closest('.delete-btn');
+    if (deleteButton) {
+        const id = parseInt(deleteButton.dataset.id);
+        removeTransaction(id);
+    }
+}
+
+/**
+ * (NEW) Removes a transaction by its ID.
+ * @param {number} id The ID of the transaction to remove.
+ */
+function removeTransaction(id) {
+    transactions = transactions.filter(transaction => transaction.id !== id);
+    updateLocalStorage();
+    init();
+}
 
 /**
  * Initializes the application.
@@ -143,5 +162,7 @@ function generateID() {
 // 4. Event Listeners and Initial Call
 // ==========================================================================
 transactionForm.addEventListener('submit', addTransaction);
+// (NEW) Listen for clicks on the entire transaction list for event delegation
+transactionList.addEventListener('click', handleTransactionClick);
 
 init();
