@@ -52,3 +52,12 @@
 ---
 
 ## 📂 プロジェクト構成
+```
+inance-dashboard/
+├── index.html
+├── style.css
+├── script.js
+├── README.md
+├── README.en.md
+└── README.ja.md
+```
