@@ -47,7 +47,7 @@ For the best development experience, use the **Live Server** extension in VS Cod
 
 ## 🔗 Live Demo
 
-**([Live Demo])(https://phucndq05.github.io/finance-dashboard/)**
+**[Live Demo](https://phucndq05.github.io/finance-dashboard/)**
 
 ---
 
