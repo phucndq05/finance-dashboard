@@ -4,6 +4,7 @@
 const transactionForm = document.getElementById('transaction-form');
 const transactionDate = document.getElementById('date');
 const transactionDescription = document.getElementById('description');
+const transactionCategory = document.getElementById('category'); // NEW: Get the category select element
 const transactionAmount = document.getElementById('amount');
 const transactionList = document.getElementById('transaction-list');
 
@@ -91,34 +92,43 @@ function addTransactionToDOM(transaction) {
 function addTransaction(event) {
     event.preventDefault();
 
+    // Get values from the form
     const type = document.querySelector('input[name="type"]:checked').value;
     const date = transactionDate.value;
     const description = transactionDescription.value;
+    const category = transactionCategory.value; // NEW: Get the category value
     const amount = parseFloat(transactionAmount.value);
 
-    if (description.trim() === '' || isNaN(amount) || amount <= 0) {
-        alert('Please enter a valid description and a positive amount.');
+    // Validation including the new category field
+    if (description.trim() === '' || category === '' || isNaN(amount) || amount <= 0) {
+        alert('Please fill out all fields with valid values.');
         return;
     }
 
+    // Create the transaction object with the new category property
     const transaction = {
         id: generateID(),
         type: type,
         date: date,
         description: description,
+        category: category, // NEW: Add category to the object
         amount: Math.abs(amount)
     };
 
+    // Add to global array and DOM
     transactions.push(transaction);
     addTransactionToDOM(transaction);
+
+    // Update summary and local storage
     updateSummary();
     updateLocalStorage();
 
+    // Reset the form
     transactionForm.reset();
 }
 
 /**
- * (NEW) Handles clicks within the transaction list (for deleting items).
+ * Handles clicks within the transaction list (for deleting items).
  * @param {Event} event The event object.
  */
 function handleTransactionClick(event) {
@@ -130,7 +140,7 @@ function handleTransactionClick(event) {
 }
 
 /**
- * (NEW) Removes a transaction by its ID.
+ * Removes a transaction by its ID.
  * @param {number} id The ID of the transaction to remove.
  */
 function removeTransaction(id) {
@@ -162,7 +172,7 @@ function generateID() {
 // 4. Event Listeners and Initial Call
 // ==========================================================================
 transactionForm.addEventListener('submit', addTransaction);
-// (NEW) Listen for clicks on the entire transaction list for event delegation
+// Listen for clicks on the entire transaction list for event delegation
 transactionList.addEventListener('click', handleTransactionClick);
 
 init();
