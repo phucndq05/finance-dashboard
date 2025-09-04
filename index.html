@@ -35,6 +35,40 @@
                 </div>
             </section>
 
+            <section class="budget-container">
+                <h2><i class="fas fa-bullseye"></i> Monthly Budgets</h2>
+                <form id="budget-form">
+                    <div class="budget-grid">
+                        <div class="budget-item">
+                            <label for="budget-food">Food & Dining</label>
+                            <input type="number" id="budget-food" data-category="Food" placeholder="$0.00">
+                        </div>
+                        <div class="budget-item">
+                            <label for="budget-transport">Transport</label>
+                            <input type="number" id="budget-transport" data-category="Transport" placeholder="$0.00">
+                        </div>
+                        <div class="budget-item">
+                            <label for="budget-shopping">Shopping</label>
+                            <input type="number" id="budget-shopping" data-category="Shopping" placeholder="$0.00">
+                        </div>
+                        <div class="budget-item">
+                            <label for="budget-bills">Bills & Utilities</label>
+                            <input type="number" id="budget-bills" data-category="Bills" placeholder="$0.00">
+                        </div>
+                        <div class="budget-item">
+                            <label for="budget-entertainment">Entertainment</label>
+                            <input type="number" id="budget-entertainment" data-category="Entertainment"
+                                placeholder="$0.00">
+                        </div>
+                        <div class="budget-item">
+                            <label for="budget-other">Other</label>
+                            <input type="number" id="budget-other" data-category="Other" placeholder="$0.00">
+                        </div>
+                    </div>
+                    <button class="btn btn-secondary"><i class="fas fa-save"></i> Save Budgets</button>
+                </form>
+            </section>
+
             <section class="transaction-container">
                 <h2>Transactions <i class="fas fa-list-alt"></i></h2>
                 <ul id="transaction-list">

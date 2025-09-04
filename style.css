@@ -331,3 +331,49 @@ input[type=number] {
         margin-right: 0;
     }
 }
+
+/* ==========================================================================
+   8. Budget Section
+   ========================================================================== */
+
+.budget-container {
+    margin-bottom: 30px;
+}
+
+.budget-container h2 {
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+}
+
+.budget-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Creates a responsive grid */
+    gap: 15px; /* Space between items */
+    margin-bottom: 20px;
+}
+
+.budget-item label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.budget-item input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+/* A secondary button style for non-primary actions */
+.btn-secondary {
+    background-color: hsl(207, 100%, 73%);
+}
+
+.btn-secondary:hover {
+    background-color:  hsl(207, 100%, 63%); /* Darker shade on hover */
+}
