@@ -1,21 +1,14 @@
 // ==========================================================================
 // 1. Element Selections
 // ==========================================================================
-// --- Form Elements ---
 const transactionForm = document.getElementById('transaction-form');
 const transactionDate = document.getElementById('date');
 const transactionDescription = document.getElementById('description');
 const transactionCategory = document.getElementById('category');
 const transactionAmount = document.getElementById('amount');
-
-// --- Budget Form Elements ---
 const budgetForm = document.getElementById('budget-form');
-const budgetInputs = document.querySelectorAll('#budget-form input'); // Get all budget inputs
-
-// --- Transaction List ---
+const budgetInputs = document.querySelectorAll('#budget-form input[type="number"]');
 const transactionList = document.getElementById('transaction-list');
-
-// --- Summary Card Displays ---
 const balanceDisplay = document.querySelector('#balance p');
 const incomeDisplay = document.querySelector('#income p');
 const expenseDisplay = document.querySelector('#expense p');
@@ -26,8 +19,6 @@ const expenseDisplay = document.querySelector('#expense p');
 // ==========================================================================
 const savedTransactions = JSON.parse(localStorage.getItem('transactions'));
 let transactions = savedTransactions || [];
-
-// NEW: Load budgets from localStorage
 const savedBudgets = JSON.parse(localStorage.getItem('budgets'));
 let budgets = savedBudgets || {};
 
@@ -37,73 +28,98 @@ let budgets = savedBudgets || {};
 // ==========================================================================
 
 /**
- * Saves the current transactions array to local storage.
+ * Saves the current state to local storage.
  */
 function updateLocalStorage() {
     localStorage.setItem('transactions', JSON.stringify(transactions));
-    localStorage.setItem('budgets', JSON.stringify(budgets)); // Also save budgets
+    localStorage.setItem('budgets', JSON.stringify(budgets));
 }
 
 /**
- * (IMPROVED) Handles the submission of the budget form.
- * @param {Event} event The submit event object.
+ * Calculates spending per category and updates budget progress bars.
  */
-function saveBudgets(event) {
-    event.preventDefault(); // Prevent page reload
-    
-    // Loop through each input field in the budget form
+function updateBudgetProgress() {
+    // 1. Calculate total spending for each category
+    const spendingByCategory = transactions
+        .filter(t => t.type === 'expense')
+        .reduce((acc, transaction) => {
+            const category = transaction.category;
+            acc[category] = (acc[category] || 0) + transaction.amount;
+            return acc;
+        }, {});
+
+    // 2. Update the progress bar for each budget item
     budgetInputs.forEach(input => {
         const category = input.dataset.category;
-        const value = input.value; // Get the value as a string
+        const budgetAmount = budgets[category] || 0;
+        const spentAmount = spendingByCategory[category] || 0;
+        // Construct the ID for the progress bar fill element
+        const progressBarFill = document.getElementById(`progress-${category.toLowerCase()}`);
 
-        // Only process if a category attribute exists
+        if (!progressBarFill) return; // Skip if no progress bar element
+
+        if (budgetAmount > 0) {
+            const percentage = Math.min((spentAmount / budgetAmount) * 100, 100);
+            progressBarFill.style.width = `${percentage}%`;
+
+            // Update color based on percentage
+            progressBarFill.classList.remove('warning', 'danger');
+            if (percentage >= 90) {
+                progressBarFill.classList.add('danger');
+            } else if (percentage >= 70) {
+                progressBarFill.classList.add('warning');
+            }
+        } else {
+            progressBarFill.style.width = '0%'; // No budget set, so progress is 0
+        }
+    });
+}
+
+
+/**
+ * Handles the submission of the budget form.
+ */
+function saveBudgets(event) {
+    event.preventDefault();
+    budgetInputs.forEach(input => {
+        const category = input.dataset.category;
+        const value = input.value;
         if (category) {
-            // If the user entered a valid number, save it
             if (value && !isNaN(parseFloat(value)) && parseFloat(value) >= 0) {
                 budgets[category] = parseFloat(value);
             } else {
-                // If the input is empty or invalid, remove the budget for that category
                 delete budgets[category];
             }
         }
     });
 
-    console.log('Saving budgets:', budgets); // DEBUG: Check what is being saved
-    updateLocalStorage(); // Save the updated budgets object
+    updateLocalStorage();
+    updateBudgetProgress(); // Update progress bars immediately
     alert('Budgets saved successfully!');
 }
 
 /**
- * (IMPROVED) Loads budget data and populates the form fields.
+ * Loads budget data and populates the form fields.
  */
 function loadBudgets() {
     budgetInputs.forEach(input => {
         const category = input.dataset.category;
-        // Check if a budget for this category exists in our budgets object
         if (category && budgets[category] !== undefined) {
             input.value = budgets[category];
         } else {
-            // If not, ensure the input is clear
             input.value = '';
         }
     });
 }
 
+
 /**
  * Calculates total income, total expense, and balance, then updates the DOM.
  */
 function updateSummary() {
-    // ... function content remains the same ...
-    const totalIncome = transactions
-        .filter(t => t.type === 'income')
-        .reduce((sum, t) => sum + t.amount, 0);
-
-    const totalExpense = transactions
-        .filter(t => t.type === 'expense')
-        .reduce((sum, t) => sum + t.amount, 0);
-
+    const totalIncome = transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+    const totalExpense = transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
     const balance = totalIncome - totalExpense;
-
     balanceDisplay.innerText = `$${balance.toFixed(2)}`;
     incomeDisplay.innerText = `+$${totalIncome.toFixed(2)}`;
     expenseDisplay.innerText = `-$${totalExpense.toFixed(2)}`;
@@ -114,7 +130,6 @@ function updateSummary() {
  * Adds a single transaction object to the DOM list.
  */
 function addTransactionToDOM(transaction) {
-    // ... function content remains the same ...
     const typeClass = transaction.type === 'income' ? 'income-item' : 'expense-item';
     const iconClass = transaction.type === 'income' ? 'income-icon' : 'expense-icon';
     const iconTag = transaction.type === 'income' ? 'fa-plus-circle' : 'fa-minus-circle';
@@ -146,34 +161,24 @@ function addTransactionToDOM(transaction) {
  * Handles the form submission to add a new transaction.
  */
 function addTransaction(event) {
-    // ... function content remains the same ...
     event.preventDefault();
-
     const type = document.querySelector('input[name="type"]:checked').value;
     const date = transactionDate.value;
     const description = transactionDescription.value;
     const category = transactionCategory.value;
     const amount = parseFloat(transactionAmount.value);
-
     if (description.trim() === '' || category === '' || isNaN(amount) || amount <= 0) {
         alert('Please fill out all fields with valid values.');
         return;
     }
-
     const transaction = {
-        id: generateID(),
-        type: type,
-        date: date,
-        description: description,
-        category: category,
-        amount: Math.abs(amount)
+        id: generateID(), type: type, date: date, description: description, category: category, amount: Math.abs(amount)
     };
-
     transactions.push(transaction);
     addTransactionToDOM(transaction);
     updateSummary();
+    updateBudgetProgress();
     updateLocalStorage();
-
     transactionForm.reset();
 }
 
@@ -181,7 +186,6 @@ function addTransaction(event) {
  * Handles clicks within the transaction list (for deleting items).
  */
 function handleTransactionClick(event) {
-    // ... function content remains the same ...
     const deleteButton = event.target.closest('.delete-btn');
     if (deleteButton) {
         const id = parseInt(deleteButton.dataset.id);
@@ -193,10 +197,9 @@ function handleTransactionClick(event) {
  * Removes a transaction by its ID.
  */
 function removeTransaction(id) {
-    // ... function content remains the same ...
     transactions = transactions.filter(transaction => transaction.id !== id);
     updateLocalStorage();
-    init();
+    init(); // init calls all necessary update functions
 }
 
 /**
@@ -206,7 +209,8 @@ function init() {
     transactionList.innerHTML = '';
     transactions.forEach(addTransactionToDOM);
     updateSummary();
-    loadBudgets(); // <-- NEW: Load budgets when the app starts
+    loadBudgets();
+    updateBudgetProgress();
 }
 
 
@@ -215,7 +219,6 @@ function init() {
  * @returns {number} A random number.
  */
 function generateID() {
-    // ... function content remains the same ...
     return Math.floor(Math.random() * 1000000);
 }
 
@@ -224,7 +227,7 @@ function generateID() {
 // 4. Event Listeners and Initial Call
 // ==========================================================================
 transactionForm.addEventListener('submit', addTransaction);
-budgetForm.addEventListener('submit', saveBudgets); // <-- NEW: Listen for budget form submission
+budgetForm.addEventListener('submit', saveBudgets);
 transactionList.addEventListener('click', handleTransactionClick);
 
 init();

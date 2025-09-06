@@ -86,8 +86,7 @@ header h1 .emoji {
    4. Transactions Section
    ========================================================================== */
 
-.transaction-container h2,
-.form-container h2 {
+.transaction-container h2 {
     border-bottom: 2px solid #eee;
     padding-bottom: 10px;
     margin-bottom: 20px;
@@ -95,8 +94,7 @@ header h1 .emoji {
     align-items: center;
 }
 
-.transaction-container h2 .fas,
-.form-container h2 .fas {
+.transaction-container h2 .fas {
     margin-left: 10px;
     color: #007bff;
 }
@@ -105,7 +103,6 @@ header h1 .emoji {
     list-style-type: none;
     padding: 0;
     margin-bottom: 30px;
-    /* Professional Touch: Make the list scrollable */
     max-height: 300px; /* Set a maximum height for the list container */
     overflow-y: auto;  /* Add a vertical scrollbar ONLY when the content exceeds the max-height */
     padding-right: 10px; /* Add some padding to prevent scrollbar from overlapping content */
@@ -131,6 +128,16 @@ header h1 .emoji {
     font-weight: bold;
 }
 
+.transaction-category {
+    display: inline-block;
+    background-color: #eee;
+    color: #555;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.75em;
+    margin-top: 5px;
+}
+
 .transaction-date {
     display: block;
     color: #777;
@@ -153,7 +160,7 @@ header h1 .emoji {
 .delete-btn {
     background-color: transparent;
     border: none;
-    color: #dc3545; /* Red color */
+    color: #dc3545;
     cursor: pointer;
     font-size: 1.1em;
     margin-left: 10px;
@@ -166,13 +173,26 @@ header h1 .emoji {
 }
 
 .delete-btn .fas {
-    /* Prevent default icon margin from affecting layout */
-    margin-right: 0; 
+    margin-right: 0;
 }
+
 
 /* ==========================================================================
    5. Form Section
    ========================================================================== */
+
+.form-container h2 {
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+}
+
+.form-container h2 .fas {
+    margin-left: 10px;
+    color: #007bff;
+}
 
 .form-control {
     margin-bottom: 15px;
@@ -252,20 +272,26 @@ input[type=number] {
 }
 
 .icon-indicator {
-    margin-right: 10px;
     display: flex;
     align-items: center;
+    justify-content: center;
     font-size: 1.2em;
-    padding: 5px;
+    margin-right: 10px;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
 }
 
 .icon-indicator.expense-icon {
-    background-color: rgba(220, 53, 69, 0.3); /* User-preferred alpha */
+    background-color: rgba(220, 53, 69, 0.3);
 }
 
 .icon-indicator.income-icon {
-    background-color: rgba(40, 167, 69, 0.3); /* User-preferred alpha */
+    background-color: rgba(40, 167, 69, 0.3);
+}
+
+.icon-indicator .fas {
+    margin-right: 0;
 }
 
 .icon-indicator .fas.fa-minus-circle {
@@ -280,29 +306,94 @@ input[type=number] {
     color: #fff;
 }
 
-/* Style for the circular background of transaction icons */
-.icon-indicator {
-    display: flex;
-    align-items: center;      /* Vertically center the icon */
-    justify-content: center;  /* Horizontally center the icon */
-    font-size: 1.2em;
-    margin-right: 10px;
-
-    /* Set a fixed size for a perfect circle */
-    width: 30px;
-    height: 30px;
-    
-    border-radius: 50%;
-}
-
-/* Remove conflicting margin from the icon inside the indicator */
-.icon-indicator .fas {
-    margin-right: 0;
-}
-
 
 /* ==========================================================================
-   7. Responsive Design
+   7. Budget Section
+   ========================================================================== */
+
+.budget-container {
+    margin-bottom: 30px;
+}
+
+.budget-container h2 {
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+}
+
+.budget-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Creates a responsive grid */
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.budget-item label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.budget-input-wrapper {
+    display: flex;
+    align-items: center;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.budget-input-wrapper span {
+    padding: 8px;
+    background-color: #eee;
+    border-right: 1px solid #ccc;
+}
+
+.budget-input-wrapper input {
+    border: none;
+    outline: none;
+    width: 100%;
+    padding: 8px;
+    box-sizing: border-box;
+}
+
+/* --- Progress Bar Styles --- */
+.progress-bar {
+    width: 100%;
+    background-color: #e9ecef;
+    border-radius: 5px;
+    height: 10px;
+    margin-top: 8px;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background-color: #28a745; /* Default: Green */
+    border-radius: 5px;
+    width: 0%;
+    transition: width 0.5s ease-in-out, background-color 0.5s ease;
+}
+
+.progress-bar-fill.warning {
+    background-color: #ffc107; /* Yellow */
+}
+
+.progress-bar-fill.danger {
+    background-color: #dc3545; /* Red */
+}
+
+/* --- Secondary Button Style --- */
+.btn-secondary {
+    background-color: #6c757d;
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+}
+
+/* ==========================================================================
+   8. Responsive Design
    ========================================================================== */
 
 @media (max-width: 600px) {
@@ -330,50 +421,4 @@ input[type=number] {
     .radio-option:not(:last-child) {
         margin-right: 0;
     }
-}
-
-/* ==========================================================================
-   8. Budget Section
-   ========================================================================== */
-
-.budget-container {
-    margin-bottom: 30px;
-}
-
-.budget-container h2 {
-    border-bottom: 2px solid #eee;
-    padding-bottom: 10px;
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-}
-
-.budget-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Creates a responsive grid */
-    gap: 15px; /* Space between items */
-    margin-bottom: 20px;
-}
-
-.budget-item label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: 600;
-}
-
-.budget-item input {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box;
-}
-
-/* A secondary button style for non-primary actions */
-.btn-secondary {
-    background-color: hsl(207, 100%, 73%);
-}
-
-.btn-secondary:hover {
-    background-color:  hsl(207, 100%, 63%); /* Darker shade on hover */
 }
