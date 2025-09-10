@@ -60,7 +60,10 @@ function updateBudgetProgress() {
 
         if (budgetAmount > 0) {
             const percentage = Math.min((spentAmount / budgetAmount) * 100, 100);
+            const rounded = Math.round(percentage);
             progressBarFill.style.width = `${percentage}%`;
+            // Set visible percent label on the bar's container
+            progressBarFill.parentElement.setAttribute('data-progress', `${rounded}%`);
 
             // Update color based on percentage
             progressBarFill.classList.remove('warning', 'danger');
@@ -71,6 +74,7 @@ function updateBudgetProgress() {
             }
         } else {
             progressBarFill.style.width = '0%'; // No budget set, so progress is 0
+            progressBarFill.parentElement.setAttribute('data-progress', '0%');
         }
     });
 }
