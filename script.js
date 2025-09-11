@@ -12,6 +12,8 @@ const transactionList = document.getElementById('transaction-list');
 const balanceDisplay = document.querySelector('#balance p');
 const incomeDisplay = document.querySelector('#income p');
 const expenseDisplay = document.querySelector('#expense p');
+const submitBtn = document.getElementById('submit-btn');
+const cancelEditBtn = document.getElementById('cancel-edit');
 
 
 // ==========================================================================
@@ -21,6 +23,7 @@ const savedTransactions = JSON.parse(localStorage.getItem('transactions'));
 let transactions = savedTransactions || [];
 const savedBudgets = JSON.parse(localStorage.getItem('budgets'));
 let budgets = savedBudgets || {};
+let editingId = null; // Track currently edited transaction id
 
 
 // ==========================================================================
@@ -152,7 +155,10 @@ function addTransactionToDOM(transaction) {
         </div>
         <div class="transaction-actions">
             <span class="transaction-amount">${amountSign}$${transaction.amount.toFixed(2)}</span>
-            <button class="delete-btn" data-id="${transaction.id}">
+            <button class="edit-btn" data-id="${transaction.id}" title="Edit">
+                <i class="fas fa-edit"></i>
+            </button>
+            <button class="delete-btn" data-id="${transaction.id}" title="Delete">
                 <i class="fas fa-trash-alt"></i>
             </button>
         </div>
@@ -175,15 +181,34 @@ function addTransaction(event) {
         alert('Please fill out all fields with valid values.');
         return;
     }
-    const transaction = {
-        id: generateID(), type: type, date: date, description: description, category: category, amount: Math.abs(amount)
-    };
-    transactions.push(transaction);
-    addTransactionToDOM(transaction);
-    updateSummary();
-    updateBudgetProgress();
-    updateLocalStorage();
-    transactionForm.reset();
+    if (editingId !== null) {
+        // Update existing transaction
+        const idx = transactions.findIndex(t => t.id === editingId);
+        if (idx !== -1) {
+            transactions[idx] = {
+                id: editingId,
+                type: type,
+                date: date,
+                description: description,
+                category: category,
+                amount: Math.abs(amount)
+            };
+        }
+        updateLocalStorage();
+        exitEditMode();
+        init(); // re-render list and summaries
+    } else {
+        // Create new transaction
+        const transaction = {
+            id: generateID(), type: type, date: date, description: description, category: category, amount: Math.abs(amount)
+        };
+        transactions.push(transaction);
+        addTransactionToDOM(transaction);
+        updateSummary();
+        updateBudgetProgress();
+        updateLocalStorage();
+        transactionForm.reset();
+    }
 }
 
 /**
@@ -194,6 +219,12 @@ function handleTransactionClick(event) {
     if (deleteButton) {
         const id = parseInt(deleteButton.dataset.id);
         removeTransaction(id);
+        return;
+    }
+    const editButton = event.target.closest('.edit-btn');
+    if (editButton) {
+        const id = parseInt(editButton.dataset.id);
+        startEditTransaction(id);
     }
 }
 
@@ -217,6 +248,41 @@ function init() {
     updateBudgetProgress();
 }
 
+/**
+ * Enter edit mode for a specific transaction: populate form and toggle buttons
+ */
+function startEditTransaction(id) {
+    const tx = transactions.find(t => t.id === id);
+    if (!tx) return;
+    editingId = id;
+    // Populate the form with existing values
+    const incomeRadio = document.getElementById('type-income');
+    const expenseRadio = document.getElementById('type-expense');
+    if (tx.type === 'income') {
+        incomeRadio.checked = true;
+    } else {
+        expenseRadio.checked = true;
+    }
+    transactionDate.value = tx.date || '';
+    transactionDescription.value = tx.description || '';
+    transactionCategory.value = tx.category || '';
+    transactionAmount.value = tx.amount != null ? tx.amount : '';
+    // Update submit/cancel controls
+    if (submitBtn) submitBtn.innerHTML = '<i class="fas fa-save"></i> Save Changes';
+    if (cancelEditBtn) cancelEditBtn.style.display = 'inline-block';
+    transactionDescription.focus();
+}
+
+/**
+ * Leave edit mode and reset form and controls
+ */
+function exitEditMode() {
+    editingId = null;
+    transactionForm.reset();
+    if (submitBtn) submitBtn.innerHTML = '<i class="fas fa-plus-circle"></i> Add Transaction';
+    if (cancelEditBtn) cancelEditBtn.style.display = 'none';
+}
+
 
 /**
  * Generates a random unique ID.
@@ -233,5 +299,8 @@ function generateID() {
 transactionForm.addEventListener('submit', addTransaction);
 budgetForm.addEventListener('submit', saveBudgets);
 transactionList.addEventListener('click', handleTransactionClick);
+if (cancelEditBtn) {
+    cancelEditBtn.addEventListener('click', exitEditMode);
+}
 
 init();

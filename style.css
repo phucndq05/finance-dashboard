@@ -176,6 +176,22 @@ header h1 .emoji {
     margin-right: 0;
 }
 
+/* Edit button style */
+.edit-btn {
+    background-color: transparent;
+    border: none;
+    color: #007bff;
+    cursor: pointer;
+    font-size: 1.1em;
+    margin-left: 10px;
+    opacity: 0.6;
+    transition: opacity 0.3s ease;
+}
+
+.edit-btn:hover {
+    opacity: 1;
+}
+
 
 /* ==========================================================================
    5. Form Section
