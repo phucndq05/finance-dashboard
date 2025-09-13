@@ -25,6 +25,16 @@ const savedBudgets = JSON.parse(localStorage.getItem('budgets'));
 let budgets = savedBudgets || {};
 let editingId = null; // Track currently edited transaction id
 
+// ==========================================================================
+// 2.1 Formatting helpers (locale currency)
+// ==========================================================================
+const LOCALE = navigator.language || 'en-US';
+const CURRENCY = 'USD';
+const currencyFormatter = new Intl.NumberFormat(LOCALE, { style: 'currency', currency: CURRENCY });
+function formatCurrency(amount) {
+    return currencyFormatter.format(amount || 0);
+}
+
 
 // ==========================================================================
 // 3. Functions
@@ -102,7 +112,7 @@ function saveBudgets(event) {
 
     updateLocalStorage();
     updateBudgetProgress(); // Update progress bars immediately
-    alert('Budgets saved successfully!');
+    showToast('Monthly budgets saved.', 'success');
 }
 
 /**
@@ -127,9 +137,9 @@ function updateSummary() {
     const totalIncome = transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
     const totalExpense = transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
     const balance = totalIncome - totalExpense;
-    balanceDisplay.innerText = `$${balance.toFixed(2)}`;
-    incomeDisplay.innerText = `+$${totalIncome.toFixed(2)}`;
-    expenseDisplay.innerText = `-$${totalExpense.toFixed(2)}`;
+    balanceDisplay.innerText = formatCurrency(balance);
+    incomeDisplay.innerText = `+${formatCurrency(totalIncome)}`;
+    expenseDisplay.innerText = `-${formatCurrency(totalExpense)}`;
 }
 
 
@@ -154,7 +164,7 @@ function addTransactionToDOM(transaction) {
             </span>
         </div>
         <div class="transaction-actions">
-            <span class="transaction-amount">${amountSign}$${transaction.amount.toFixed(2)}</span>
+            <span class="transaction-amount">${amountSign}${formatCurrency(transaction.amount)}</span>
             <button class="edit-btn" data-id="${transaction.id}" title="Edit">
                 <i class="fas fa-edit"></i>
             </button>
@@ -178,7 +188,7 @@ function addTransaction(event) {
     const category = transactionCategory.value;
     const amount = parseFloat(transactionAmount.value);
     if (description.trim() === '' || category === '' || isNaN(amount) || amount <= 0) {
-        alert('Please fill out all fields with valid values.');
+        showToast('Please fill out all fields with valid values.', 'error');
         return;
     }
     if (editingId !== null) {
@@ -197,6 +207,7 @@ function addTransaction(event) {
         updateLocalStorage();
         exitEditMode();
         init(); // re-render list and summaries
+        showToast('Transaction changes saved.', 'success');
     } else {
         // Create new transaction
         const transaction = {
@@ -208,6 +219,7 @@ function addTransaction(event) {
         updateBudgetProgress();
         updateLocalStorage();
         transactionForm.reset();
+        showToast('New transaction added.', 'success');
     }
 }
 
@@ -218,7 +230,8 @@ function handleTransactionClick(event) {
     const deleteButton = event.target.closest('.delete-btn');
     if (deleteButton) {
         const id = parseInt(deleteButton.dataset.id);
-        removeTransaction(id);
+        const ok = confirm('Are you sure you want to delete this transaction?');
+        if (ok) removeTransaction(id);
         return;
     }
     const editButton = event.target.closest('.edit-btn');
@@ -235,6 +248,25 @@ function removeTransaction(id) {
     transactions = transactions.filter(transaction => transaction.id !== id);
     updateLocalStorage();
     init(); // init calls all necessary update functions
+    showToast('Transaction deleted.', 'info');
+}
+
+// ==========================================================================
+// 3.x Toast notifications
+// ==========================================================================
+function showToast(message, type = 'info') {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    const icon = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : type === 'warn' ? 'fa-exclamation-triangle' : 'fa-info-circle';
+    toast.innerHTML = `<i class="fas ${icon}"></i><span>${message}</span>`;
+    container.appendChild(toast);
+    requestAnimationFrame(() => toast.classList.add('show'));
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 250);
+    }, 2800);
 }
 
 /**
