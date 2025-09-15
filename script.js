@@ -14,6 +14,12 @@ const incomeDisplay = document.querySelector('#income p');
 const expenseDisplay = document.querySelector('#expense p');
 const submitBtn = document.getElementById('submit-btn');
 const cancelEditBtn = document.getElementById('cancel-edit');
+// Filters and sorting controls
+const searchInput = document.getElementById('search-input');
+const filterType = document.getElementById('filter-type');
+const filterCategory = document.getElementById('filter-category');
+const sortBySelect = document.getElementById('sort-by');
+const sortDirSelect = document.getElementById('sort-dir');
 
 
 // ==========================================================================
@@ -214,11 +220,9 @@ function addTransaction(event) {
             id: generateID(), type: type, date: date, description: description, category: category, amount: Math.abs(amount)
         };
         transactions.push(transaction);
-        addTransactionToDOM(transaction);
-        updateSummary();
-        updateBudgetProgress();
         updateLocalStorage();
         transactionForm.reset();
+        init();
         showToast('New transaction added.', 'success');
     }
 }
@@ -273,11 +277,54 @@ function showToast(message, type = 'info') {
  * Initializes the application.
  */
 function init() {
-    transactionList.innerHTML = '';
-    transactions.forEach(addTransactionToDOM);
+    renderTransactions();
     updateSummary();
     loadBudgets();
     updateBudgetProgress();
+}
+
+// ==========================================================================
+// 3. Rendering with filter/sort
+// ==========================================================================
+function getFilteredSortedTransactions() {
+    const q = (searchInput && searchInput.value || '').trim().toLowerCase();
+    const type = (filterType && filterType.value) || 'all';
+    const category = (filterCategory && filterCategory.value) || 'all';
+    const sortBy = (sortBySelect && sortBySelect.value) || 'date';
+    const dir = (sortDirSelect && sortDirSelect.value) || 'desc';
+
+    let list = [...transactions];
+
+    if (q) {
+        list = list.filter(t => (t.description || '').toLowerCase().includes(q));
+    }
+    if (type !== 'all') {
+        list = list.filter(t => t.type === type);
+    }
+    if (category !== 'all') {
+        list = list.filter(t => t.category === category);
+    }
+
+    const factor = dir === 'asc' ? 1 : -1;
+    list.sort((a, b) => {
+        if (sortBy === 'amount') {
+            const va = a.amount || 0;
+            const vb = b.amount || 0;
+            return (va - vb) * factor;
+        }
+        // default: date
+        const va = a.date || '';
+        const vb = b.date || '';
+        return (va < vb ? -1 : va > vb ? 1 : 0) * factor;
+    });
+
+    return list;
+}
+
+function renderTransactions() {
+    transactionList.innerHTML = '';
+    const list = getFilteredSortedTransactions();
+    list.forEach(addTransactionToDOM);
 }
 
 /**
@@ -334,5 +381,11 @@ transactionList.addEventListener('click', handleTransactionClick);
 if (cancelEditBtn) {
     cancelEditBtn.addEventListener('click', exitEditMode);
 }
+// Filter/sort listeners
+if (searchInput) searchInput.addEventListener('input', renderTransactions);
+if (filterType) filterType.addEventListener('change', renderTransactions);
+if (filterCategory) filterCategory.addEventListener('change', renderTransactions);
+if (sortBySelect) sortBySelect.addEventListener('change', renderTransactions);
+if (sortDirSelect) sortDirSelect.addEventListener('change', renderTransactions);
 
 init();

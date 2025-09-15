@@ -106,6 +106,32 @@
 
             <section class="transaction-container">
                 <h2>Transactions <i class="fas fa-list-alt"></i></h2>
+                <div class="filters-container">
+                    <input type="text" id="search-input" placeholder="Search description..." aria-label="Search description">
+                    <select id="filter-type" aria-label="Filter by type">
+                        <option value="all" selected>All types</option>
+                        <option value="income">Income</option>
+                        <option value="expense">Expense</option>
+                    </select>
+                    <select id="filter-category" aria-label="Filter by category">
+                        <option value="all" selected>All categories</option>
+                        <option value="Food">Food & Dining</option>
+                        <option value="Transport">Transport</option>
+                        <option value="Shopping">Shopping</option>
+                        <option value="Bills">Bills & Utilities</option>
+                        <option value="Entertainment">Entertainment</option>
+                        <option value="Income">Income</option>
+                        <option value="Other">Other</option>
+                    </select>
+                    <select id="sort-by" aria-label="Sort by">
+                        <option value="date">Sort: Date</option>
+                        <option value="amount" selected>Sort: Amount</option>
+                    </select>
+                    <select id="sort-dir" aria-label="Sort direction">
+                        <option value="desc" selected>Desc</option>
+                        <option value="asc">Asc</option>
+                    </select>
+                </div>
                 <ul id="transaction-list">
                     </ul>
             </section>
