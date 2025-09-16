@@ -36,6 +36,27 @@ header h1 .emoji {
     color: #007bff; /* Color for main title icon/emoji */
 }
 
+/* Header layout + theme toggle */
+header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.icon-btn {
+    background: transparent;
+    border: none;
+    color: #555;
+    cursor: pointer;
+    font-size: 1.2em;
+    padding: 6px;
+    border-radius: 6px;
+}
+
+.icon-btn:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
 
 /* ==========================================================================
    3. Summary Section
@@ -293,6 +314,58 @@ input[type=number] {
     -moz-appearance: textfield;
     appearance: none;
 }
+
+/* ==========================================================================
+   9. Dark Mode
+   ========================================================================== */
+
+body.dark {
+    background-color: #121212;
+    color: #e6e6e6;
+}
+
+body.dark .container {
+    background: #1e1e1e;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+}
+
+body.dark header h1 { color: #e0e0e0; }
+body.dark .icon-btn { color: #ddd; }
+body.dark .icon-btn:hover { background: rgba(255, 255, 255, 0.06); }
+
+/* Cards and list items */
+body.dark .transaction-item { background: #222; box-shadow: none; }
+body.dark .transaction-container h2,
+body.dark .form-container h2,
+body.dark .budget-container h2 { border-bottom-color: #333; }
+
+/* Inputs/selects */
+body.dark .form-control input,
+body.dark .form-control select,
+body.dark .filters-container input[type="text"],
+body.dark .filters-container select {
+    background: #1d1d1d;
+    color: #e6e6e6;
+    border-color: #333;
+}
+
+/* Budget inputs */
+body.dark .budget-input-wrapper { border-color: #333; }
+body.dark .budget-input-wrapper span { background-color: #2a2a2a; border-right-color: #333; color: #bbb; }
+body.dark .budget-input-wrapper input { background: #1d1d1d; color: #e6e6e6; }
+
+/* Progress bars */
+body.dark .progress-bar { background-color: #2a2a2a; }
+body.dark .progress-bar::after { color: #ddd; }
+
+/* Buttons */
+body.dark .btn { box-shadow: none; }
+body.dark .btn-secondary { background-color: #5a6268; }
+body.dark .btn-secondary:hover { background-color: #4e555b; }
+
+/* Misc text colors */
+body.dark .transaction-date { color: #aaa; }
+body.dark .transaction-actions .transaction-amount { color: inherit; }
 
 /* ==========================================================================
    6. Icon Styles

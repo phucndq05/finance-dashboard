@@ -14,6 +14,7 @@ const incomeDisplay = document.querySelector('#income p');
 const expenseDisplay = document.querySelector('#expense p');
 const submitBtn = document.getElementById('submit-btn');
 const cancelEditBtn = document.getElementById('cancel-edit');
+const themeToggle = document.getElementById('theme-toggle');
 // Filters and sorting controls
 const searchInput = document.getElementById('search-input');
 const filterType = document.getElementById('filter-type');
@@ -389,3 +390,40 @@ if (sortBySelect) sortBySelect.addEventListener('change', renderTransactions);
 if (sortDirSelect) sortDirSelect.addEventListener('change', renderTransactions);
 
 init();
+
+// ==========================================================================
+// 5. Theme (Dark/Light) Toggle with persistence
+// ==========================================================================
+(function initTheme() {
+    const saved = localStorage.getItem('theme');
+    if (saved === 'dark') {
+        document.body.classList.add('dark');
+        updateThemeToggleIcon();
+    }
+})();
+
+function updateThemeToggleIcon() {
+    if (!themeToggle) return;
+    const i = themeToggle.querySelector('i');
+    if (!i) return;
+    if (document.body.classList.contains('dark')) {
+        i.classList.remove('fa-moon');
+        i.classList.add('fa-sun');
+        themeToggle.title = 'Switch to light mode';
+        themeToggle.setAttribute('aria-label', 'Switch to light mode');
+    } else {
+        i.classList.remove('fa-sun');
+        i.classList.add('fa-moon');
+        themeToggle.title = 'Switch to dark mode';
+        themeToggle.setAttribute('aria-label', 'Switch to dark mode');
+    }
+}
+
+if (themeToggle) {
+    themeToggle.addEventListener('click', () => {
+        document.body.classList.toggle('dark');
+        const isDark = document.body.classList.contains('dark');
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        updateThemeToggleIcon();
+    });
+}
