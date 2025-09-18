@@ -17,9 +17,18 @@
     <div class="container">
         <header>
             <h1><i class="fas fa-wallet"></i> My Personal Finance Dashboard 💰</h1>
-            <button id="theme-toggle" class="icon-btn" aria-label="Toggle dark mode" title="Toggle dark mode">
-                <i class="fas fa-moon"></i>
-            </button>
+            <div class="header-controls">
+                <label for="currency-select" class="visually-hidden">Select currency</label>
+                <select id="currency-select" title="Select currency">
+                    <option value="USD">USD - US Dollar</option>
+                    <option value="VND">VND - Vietnamese Dong</option>
+                    <option value="JPY">JPY - Japanese Yen</option>
+                    <option value="KRW">KRW - South Korean Won</option>
+                </select>
+                <button id="theme-toggle" class="icon-btn" aria-label="Toggle dark mode" title="Toggle dark mode">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
         </header>
 
         <main>
@@ -45,7 +54,7 @@
                         <div class="budget-item">
                             <label for="budget-food">Food & Dining</label>
                             <div class="budget-input-wrapper">
-                                <span>$</span>
+                                <span class="currency-symbol">$</span>
                                 <input type="number" id="budget-food" data-category="Food" placeholder="0.00">
                             </div>
                             <div class="progress-bar">
@@ -55,7 +64,7 @@
                         <div class="budget-item">
                             <label for="budget-transport">Transport</label>
                             <div class="budget-input-wrapper">
-                                <span>$</span>
+                                <span class="currency-symbol">$</span>
                                 <input type="number" id="budget-transport" data-category="Transport" placeholder="0.00">
                             </div>
                             <div class="progress-bar">
@@ -65,7 +74,7 @@
                         <div class="budget-item">
                             <label for="budget-shopping">Shopping</label>
                             <div class="budget-input-wrapper">
-                                <span>$</span>
+                                <span class="currency-symbol">$</span>
                                 <input type="number" id="budget-shopping" data-category="Shopping" placeholder="0.00">
                             </div>
                             <div class="progress-bar">
@@ -75,7 +84,7 @@
                         <div class="budget-item">
                             <label for="budget-bills">Bills & Utilities</label>
                             <div class="budget-input-wrapper">
-                                <span>$</span>
+                                <span class="currency-symbol">$</span>
                                 <input type="number" id="budget-bills" data-category="Bills" placeholder="0.00">
                             </div>
                             <div class="progress-bar">
@@ -85,7 +94,7 @@
                         <div class="budget-item">
                             <label for="budget-entertainment">Entertainment</label>
                             <div class="budget-input-wrapper">
-                                <span>$</span>
+                                <span class="currency-symbol">$</span>
                                 <input type="number" id="budget-entertainment" data-category="Entertainment" placeholder="0.00">
                             </div>
                             <div class="progress-bar">
@@ -95,7 +104,7 @@
                         <div class="budget-item">
                             <label for="budget-other">Other</label>
                             <div class="budget-input-wrapper">
-                                <span>$</span>
+                                <span class="currency-symbol">$</span>
                                 <input type="number" id="budget-other" data-category="Other" placeholder="0.00">
                             </div>
                             <div class="progress-bar">

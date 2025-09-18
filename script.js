@@ -15,6 +15,7 @@ const expenseDisplay = document.querySelector('#expense p');
 const submitBtn = document.getElementById('submit-btn');
 const cancelEditBtn = document.getElementById('cancel-edit');
 const themeToggle = document.getElementById('theme-toggle');
+const currencySelect = document.getElementById('currency-select');
 // Filters and sorting controls
 const searchInput = document.getElementById('search-input');
 const filterType = document.getElementById('filter-type');
@@ -35,9 +36,67 @@ let editingId = null; // Track currently edited transaction id
 // ==========================================================================
 // 2.1 Formatting helpers (locale currency)
 // ==========================================================================
-const LOCALE = navigator.language || 'en-US';
-const CURRENCY = 'USD';
-const currencyFormatter = new Intl.NumberFormat(LOCALE, { style: 'currency', currency: CURRENCY });
+const CURRENCY_SETTINGS = {
+    USD: {
+        code: 'USD',
+        label: 'USD - US Dollar',
+        locale: 'en-US',
+        symbol: '$',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+        placeholder: '0.00',
+        step: '0.01'
+    },
+    VND: {
+        code: 'VND',
+        label: 'VND - Vietnamese Dong',
+        locale: 'vi-VN',
+        symbol: '₫',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+        placeholder: '0',
+        step: '1'
+    },
+    JPY: {
+        code: 'JPY',
+        label: 'JPY - Japanese Yen',
+        locale: 'ja-JP',
+        symbol: '¥',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+        placeholder: '0',
+        step: '1'
+    },
+    KRW: {
+        code: 'KRW',
+        label: 'KRW - South Korean Won',
+        locale: 'ko-KR',
+        symbol: '₩',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+        placeholder: '0',
+        step: '1'
+    }
+};
+
+const DEFAULT_CURRENCY = 'USD';
+
+function createCurrencyFormatter(currencyCode) {
+    const settings = CURRENCY_SETTINGS[currencyCode] || CURRENCY_SETTINGS[DEFAULT_CURRENCY];
+    return new Intl.NumberFormat(settings.locale || navigator.language || 'en-US', {
+        style: 'currency',
+        currency: settings.code,
+        minimumFractionDigits: settings.minimumFractionDigits,
+        maximumFractionDigits: settings.maximumFractionDigits
+    });
+}
+
+let currentCurrency = localStorage.getItem('currency') || DEFAULT_CURRENCY;
+if (!CURRENCY_SETTINGS[currentCurrency]) {
+    currentCurrency = DEFAULT_CURRENCY;
+}
+let currencyFormatter = createCurrencyFormatter(currentCurrency);
+
 function formatCurrency(amount) {
     return currencyFormatter.format(amount || 0);
 }
@@ -53,6 +112,30 @@ function formatCurrency(amount) {
 function updateLocalStorage() {
     localStorage.setItem('transactions', JSON.stringify(transactions));
     localStorage.setItem('budgets', JSON.stringify(budgets));
+}
+
+function applyCurrencyToBudgetInputs() {
+    const settings = CURRENCY_SETTINGS[currentCurrency] || CURRENCY_SETTINGS[DEFAULT_CURRENCY];
+    document.querySelectorAll('.currency-symbol').forEach(symbolEl => {
+        symbolEl.textContent = settings.symbol;
+    });
+    budgetInputs.forEach(input => {
+        input.placeholder = settings.placeholder;
+        input.step = settings.step;
+    });
+    if (transactionAmount) {
+        transactionAmount.step = settings.step;
+    }
+}
+
+function setCurrency(currencyCode) {
+    if (!CURRENCY_SETTINGS[currencyCode]) return;
+    currentCurrency = currencyCode;
+    localStorage.setItem('currency', currentCurrency);
+    currencyFormatter = createCurrencyFormatter(currentCurrency);
+    applyCurrencyToBudgetInputs();
+    updateSummary();
+    renderTransactions();
 }
 
 /**
@@ -278,6 +361,7 @@ function showToast(message, type = 'info') {
  * Initializes the application.
  */
 function init() {
+    applyCurrencyToBudgetInputs();
     renderTransactions();
     updateSummary();
     loadBudgets();
@@ -388,6 +472,16 @@ if (filterType) filterType.addEventListener('change', renderTransactions);
 if (filterCategory) filterCategory.addEventListener('change', renderTransactions);
 if (sortBySelect) sortBySelect.addEventListener('change', renderTransactions);
 if (sortDirSelect) sortDirSelect.addEventListener('change', renderTransactions);
+
+if (currencySelect) {
+    currencySelect.value = currentCurrency;
+    currencySelect.addEventListener('change', event => {
+        setCurrency(event.target.value);
+    });
+} else {
+    // Ensure summary still reflects persisted currency even if selector missing
+    currencyFormatter = createCurrencyFormatter(currentCurrency);
+}
 
 init();
 
