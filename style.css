@@ -8,15 +8,15 @@ body {
     color: #333;
     line-height: 1.6;
     margin: 0;
-    padding: 20px;
+    padding: 16px;
 }
 
 .container {
-    max-width: 800px;
-    margin: 0 auto; /* Center the container */
+    width: min(100%, 1100px);
+    margin: 0 auto;
     background: #fff;
-    padding: 20px 30px;
-    border-radius: 8px;
+    padding: clamp(16px, 3vw, 32px);
+    border-radius: 16px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
@@ -24,23 +24,23 @@ body {
    2. Header
    ========================================================================== */
 
+header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
 header h1 {
     color: #4a4a4a;
-    text-align: center;
-    margin-bottom: 20px;
-    font-size: 2em;
+    margin: 0;
+    font-size: clamp(1.5rem, 2.4vw, 2.5rem);
 }
 
 header h1 .fas,
 header h1 .emoji {
-    color: #007bff; /* Color for main title icon/emoji */
-}
-
-/* Header layout + theme toggle */
-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    color: #007bff;
 }
 
 .header-controls {
@@ -87,18 +87,19 @@ header {
    3. Summary Section
    ========================================================================== */
 
+
 .summary-container {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 30px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
 }
 
 .summary-card {
-    flex-basis: 32%;
-    padding: 15px;
+    padding: 16px;
+    border-radius: 12px;
     text-align: center;
-    border-radius: 5px;
-    color: #fff; /* White text on colored backgrounds */
+    color: #fff;
 }
 
 .summary-card h2 {
@@ -110,8 +111,8 @@ header {
 
 .summary-card p {
     margin: 0;
-    font-size: 24px;
-    font-weight: bold;
+    font-size: clamp(1.4rem, 2.2vw, 2.1rem);
+    font-weight: 700;
 }
 
 /* --- Color coding for Summary Cards --- */
@@ -145,28 +146,27 @@ header {
     color: #007bff;
 }
 
-#
 .filters-container {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
-    margin: 10px 0 15px;
+    gap: 12px;
+    margin: 12px 0 18px;
 }
 
 .filters-container input[type="text"],
 .filters-container select {
-    padding: 8px;
+    padding: 10px;
     border: 1px solid #ccc;
-    border-radius: 4px;
+    border-radius: 8px;
 }
 
 #transaction-list {
     list-style-type: none;
     padding: 0;
     margin-bottom: 30px;
-    max-height: 300px; /* Set a maximum height for the list container */
-    overflow-y: auto;  /* Add a vertical scrollbar ONLY when the content exceeds the max-height */
-    padding-right: 10px; /* Add some padding to prevent scrollbar from overlapping content */
+    max-height: 300px;
+    overflow-y: auto;
+    padding-right: 10px;
 }
 
 .transaction-item {
@@ -178,6 +178,7 @@ header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 12px;
 }
 
 .transaction-info {
@@ -524,6 +525,109 @@ body.dark .transaction-actions .transaction-amount { color: inherit; }
     background-color: #5a6268;
 }
 
+
+/* ==========================================================================
+   11. Responsive Layout
+   ========================================================================== */
+
+@media (max-width: 1024px) {
+    .container {
+        border-radius: 12px;
+    }
+
+    .summary-container {
+        gap: 20px;
+    }
+
+    .budget-grid {
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+        padding: 12px;
+    }
+
+    .container {
+        padding: 20px;
+        border-radius: 10px;
+    }
+
+    header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .header-controls {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .summary-container {
+        grid-template-columns: 1fr;
+    }
+
+    .filters-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    #transaction-list {
+        max-height: none;
+    }
+
+    .transaction-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .transaction-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+}
+
+@media (max-width: 480px) {
+    header h1 {
+        font-size: 1.6rem;
+    }
+
+    .header-controls {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    #currency-select {
+        width: 100%;
+    }
+
+    .icon-btn {
+        align-self: flex-end;
+    }
+
+    .budget-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .transaction-actions {
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 8px;
+    }
+
+    .radio-container {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .radio-option:not(:last-child) {
+        margin-right: 0;
+    }
+}
+
 /* --- Centered Percentage Label on Progress Bar --- */
 .progress-bar::after {
     content: attr(data-progress);
@@ -577,34 +681,3 @@ body.dark .transaction-actions .transaction-amount { color: inherit; }
 .toast.warn { background-color: #ffc107; color: #222; }
 
 .toast .fas { margin-right: 6px; }
-
-/* ==========================================================================
-   8. Responsive Design
-   ========================================================================== */
-
-@media (max-width: 600px) {
-    body {
-        padding: 10px;
-    }
-
-    .container {
-        padding: 15px;
-    }
-
-    .summary-container {
-        flex-direction: column;
-    }
-
-    .summary-card {
-        margin-bottom: 10px;
-    }
-
-    .radio-container {
-        flex-direction: column;
-        gap: 10px;
-    }
-
-    .radio-option:not(:last-child) {
-        margin-right: 0;
-    }
-}
