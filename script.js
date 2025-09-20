@@ -22,6 +22,7 @@ const filterType = document.getElementById('filter-type');
 const filterCategory = document.getElementById('filter-category');
 const sortBySelect = document.getElementById('sort-by');
 const sortDirSelect = document.getElementById('sort-dir');
+const desktopCardsQuery = window.matchMedia('(min-width: 769px)');
 
 
 // ==========================================================================
@@ -99,6 +100,26 @@ let currencyFormatter = createCurrencyFormatter(currentCurrency);
 
 function formatCurrency(amount) {
     return currencyFormatter.format(amount || 0);
+}
+
+function escapeHtml(value) {
+    if (value === null || value === undefined) return '';
+    return String(value).replace(/[&<>"']/g, match => {
+        switch (match) {
+            case '&':
+                return '&amp;';
+            case '<':
+                return '&lt;';
+            case '>':
+                return '&gt;';
+            case '"':
+                return '&quot;';
+            case "'":
+                return '&#39;';
+            default:
+                return match;
+        }
+    });
 }
 
 
@@ -239,30 +260,61 @@ function updateSummary() {
 function addTransactionToDOM(transaction) {
     const typeClass = transaction.type === 'income' ? 'income-item' : 'expense-item';
     const iconClass = transaction.type === 'income' ? 'income-icon' : 'expense-icon';
-    const iconTag = transaction.type === 'income' ? 'fa-plus-circle' : 'fa-minus-circle';
+    const iconTag = transaction.type === 'income' ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down';
     const amountSign = transaction.type === 'income' ? '+' : '-';
     const listItem = document.createElement('li');
     listItem.classList.add('transaction-item', typeClass);
 
+    const safeDescription = escapeHtml(transaction.description);
+    const safeCategory = escapeHtml(transaction.category);
+    const safeDate = escapeHtml(transaction.date);
+
     listItem.innerHTML = `
-        <div class="transaction-info">
-            <span class="icon-indicator ${iconClass}"><i class="fas ${iconTag}"></i></span>
-            <span class="transaction-details">
-                <span class="transaction-description">${transaction.description}</span>
-                <small class="transaction-category">${transaction.category}</small>
-                <small class="transaction-date">${transaction.date}</small>
-            </span>
+        <div class="transaction-header">
+            <div class="transaction-info">
+                <span class="icon-indicator ${iconClass}"><i class="fas ${iconTag}"></i></span>
+                <div class="transaction-overview">
+                    <span class="transaction-description">${safeDescription}</span>
+                </div>
+            </div>
+            <div class="transaction-meta">
+                <span class="transaction-amount">${amountSign}${formatCurrency(transaction.amount)}</span>
+                <button class="transaction-toggle" type="button" aria-expanded="false" aria-label="Toggle details for ${safeDescription || 'transaction'}">
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+            </div>
         </div>
-        <div class="transaction-actions">
-            <span class="transaction-amount">${amountSign}${formatCurrency(transaction.amount)}</span>
-            <button class="edit-btn" data-id="${transaction.id}" title="Edit">
-                <i class="fas fa-edit"></i>
-            </button>
-            <button class="delete-btn" data-id="${transaction.id}" title="Delete">
-                <i class="fas fa-trash-alt"></i>
-            </button>
+        <div class="transaction-body">
+            <div class="transaction-extra">
+                <div class="transaction-extra-item">
+                    <span class="extra-label">Category</span>
+                    <span class="extra-value">${safeCategory}</span>
+                </div>
+                <div class="transaction-extra-item">
+                    <span class="extra-label">Date</span>
+                    <span class="extra-value">${safeDate}</span>
+                </div>
+            </div>
+            <div class="transaction-actions">
+                <button class="action-btn edit-btn" data-id="${transaction.id}" title="Edit transaction" aria-label="Edit transaction">
+                    <i class="fas fa-pen-to-square"></i><span>Edit</span>
+                </button>
+                <button class="action-btn delete-btn" data-id="${transaction.id}" title="Delete transaction" aria-label="Delete transaction">
+                    <i class="fas fa-trash"></i><span>Delete</span>
+                </button>
+            </div>
         </div>
     `;
+
+    const toggleButton = listItem.querySelector('.transaction-toggle');
+    const expandByDefault = desktopCardsQuery.matches;
+    if (expandByDefault) {
+        listItem.classList.add('expanded');
+        if (toggleButton) {
+            toggleButton.setAttribute('aria-expanded', 'true');
+        }
+    }
+
     transactionList.prepend(listItem);
 }
 
@@ -315,6 +367,15 @@ function addTransaction(event) {
  * Handles clicks within the transaction list (for deleting items).
  */
 function handleTransactionClick(event) {
+    const toggleButton = event.target.closest('.transaction-toggle');
+    if (toggleButton) {
+        const item = toggleButton.closest('.transaction-item');
+        if (item) {
+            const expanded = item.classList.toggle('expanded');
+            toggleButton.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+        }
+        return;
+    }
     const deleteButton = event.target.closest('.delete-btn');
     if (deleteButton) {
         const id = parseInt(deleteButton.dataset.id);
@@ -410,6 +471,23 @@ function renderTransactions() {
     transactionList.innerHTML = '';
     const list = getFilteredSortedTransactions();
     list.forEach(addTransactionToDOM);
+    syncTransactionCardExpansion(desktopCardsQuery.matches);
+}
+
+function syncTransactionCardExpansion(shouldExpand) {
+    if (!transactionList) return;
+    const items = transactionList.querySelectorAll('.transaction-item');
+    items.forEach(item => {
+        const toggle = item.querySelector('.transaction-toggle');
+        if (!toggle) return;
+        if (shouldExpand) {
+            item.classList.add('expanded');
+            toggle.setAttribute('aria-expanded', 'true');
+        } else {
+            item.classList.remove('expanded');
+            toggle.setAttribute('aria-expanded', 'false');
+        }
+    });
 }
 
 /**
@@ -481,6 +559,16 @@ if (currencySelect) {
 } else {
     // Ensure summary still reflects persisted currency even if selector missing
     currencyFormatter = createCurrencyFormatter(currentCurrency);
+}
+
+if (typeof desktopCardsQuery.addEventListener === 'function') {
+    desktopCardsQuery.addEventListener('change', event => {
+        syncTransactionCardExpansion(event.matches);
+    });
+} else if (typeof desktopCardsQuery.addListener === 'function') {
+    desktopCardsQuery.addListener(event => {
+        syncTransactionCardExpansion(event.matches);
+    });
 }
 
 init();
