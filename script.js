@@ -13,9 +13,17 @@ const balanceDisplay = document.querySelector('#balance p');
 const incomeDisplay = document.querySelector('#income p');
 const expenseDisplay = document.querySelector('#expense p');
 const submitBtn = document.getElementById('submit-btn');
-const cancelEditBtn = document.getElementById('cancel-edit');
 const themeToggle = document.getElementById('theme-toggle');
 const currencySelect = document.getElementById('currency-select');
+const editModal = document.getElementById('edit-modal');
+const editForm = document.getElementById('edit-form');
+const editTypeIncome = document.getElementById('edit-type-income');
+const editTypeExpense = document.getElementById('edit-type-expense');
+const editDate = document.getElementById('edit-date');
+const editCategory = document.getElementById('edit-category');
+const editDescription = document.getElementById('edit-description');
+const editAmount = document.getElementById('edit-amount');
+const modalDismissTriggers = document.querySelectorAll('[data-dismiss="modal"]');
 // Filters and sorting controls
 const searchInput = document.getElementById('search-input');
 const filterType = document.getElementById('filter-type');
@@ -33,6 +41,7 @@ let transactions = savedTransactions || [];
 const savedBudgets = JSON.parse(localStorage.getItem('budgets'));
 let budgets = savedBudgets || {};
 let editingId = null; // Track currently edited transaction id
+let lastFocusedElement = null;
 
 // ==========================================================================
 // 2.1 Formatting helpers (locale currency)
@@ -146,6 +155,9 @@ function applyCurrencyToBudgetInputs() {
     });
     if (transactionAmount) {
         transactionAmount.step = settings.step;
+    }
+    if (editAmount) {
+        editAmount.step = settings.step;
     }
 }
 
@@ -333,34 +345,14 @@ function addTransaction(event) {
         showToast('Please fill out all fields with valid values.', 'error');
         return;
     }
-    if (editingId !== null) {
-        // Update existing transaction
-        const idx = transactions.findIndex(t => t.id === editingId);
-        if (idx !== -1) {
-            transactions[idx] = {
-                id: editingId,
-                type: type,
-                date: date,
-                description: description,
-                category: category,
-                amount: Math.abs(amount)
-            };
-        }
-        updateLocalStorage();
-        exitEditMode();
-        init(); // re-render list and summaries
-        showToast('Transaction changes saved.', 'success');
-    } else {
-        // Create new transaction
-        const transaction = {
-            id: generateID(), type: type, date: date, description: description, category: category, amount: Math.abs(amount)
-        };
-        transactions.push(transaction);
-        updateLocalStorage();
-        transactionForm.reset();
-        init();
-        showToast('New transaction added.', 'success');
-    }
+    const transaction = {
+        id: generateID(), type: type, date: date, description: description, category: category, amount: Math.abs(amount)
+    };
+    transactions.push(transaction);
+    updateLocalStorage();
+    transactionForm.reset();
+    init();
+    showToast('New transaction added.', 'success');
 }
 
 /**
@@ -496,35 +488,91 @@ function syncTransactionCardExpansion(shouldExpand) {
 function startEditTransaction(id) {
     const tx = transactions.find(t => t.id === id);
     if (!tx) return;
-    editingId = id;
-    // Populate the form with existing values
-    const incomeRadio = document.getElementById('type-income');
-    const expenseRadio = document.getElementById('type-expense');
-    if (tx.type === 'income') {
-        incomeRadio.checked = true;
-    } else {
-        expenseRadio.checked = true;
+    openEditModal(tx);
+}
+
+function openEditModal(transaction) {
+    if (!editModal || !editForm) return;
+    editingId = transaction.id;
+    lastFocusedElement = document.activeElement;
+
+    if (editTypeIncome) editTypeIncome.checked = transaction.type === 'income';
+    if (editTypeExpense) editTypeExpense.checked = transaction.type !== 'income';
+
+    if (editDate) editDate.value = transaction.date || '';
+    if (editCategory) {
+        const existingOption = Array.from(editCategory.options).some(opt => opt.value === transaction.category);
+        if (!existingOption && transaction.category) {
+            const opt = document.createElement('option');
+            opt.value = transaction.category;
+            opt.textContent = transaction.category;
+            editCategory.appendChild(opt);
+        }
+        editCategory.value = transaction.category || '';
     }
-    transactionDate.value = tx.date || '';
-    transactionDescription.value = tx.description || '';
-    transactionCategory.value = tx.category || '';
-    transactionAmount.value = tx.amount != null ? tx.amount : '';
-    // Update submit/cancel controls
-    if (submitBtn) submitBtn.innerHTML = '<i class="fas fa-save"></i> Save Changes';
-    if (cancelEditBtn) cancelEditBtn.style.display = 'inline-block';
-    transactionDescription.focus();
+    if (editDescription) editDescription.value = transaction.description || '';
+    if (editAmount) editAmount.value = transaction.amount != null ? transaction.amount : '';
+
+    editModal.classList.add('active');
+    editModal.setAttribute('aria-hidden', 'false');
+
+    requestAnimationFrame(() => {
+        if (editDescription) {
+            editDescription.focus();
+        }
+    });
 }
 
-/**
- * Leave edit mode and reset form and controls
- */
-function exitEditMode() {
+function closeEditModal() {
+    if (!editModal || !editForm) return;
+    editModal.classList.remove('active');
+    editModal.setAttribute('aria-hidden', 'true');
+    editForm.reset();
     editingId = null;
-    transactionForm.reset();
-    if (submitBtn) submitBtn.innerHTML = '<i class="fas fa-plus-circle"></i> Add Transaction';
-    if (cancelEditBtn) cancelEditBtn.style.display = 'none';
+    if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
+        lastFocusedElement.focus();
+    }
+    lastFocusedElement = null;
 }
 
+function handleEditFormSubmit(event) {
+    event.preventDefault();
+    if (editingId === null) {
+        closeEditModal();
+        return;
+    }
+
+    const type = editTypeIncome && editTypeIncome.checked ? 'income' : 'expense';
+    const date = editDate ? editDate.value : '';
+    const description = (editDescription && editDescription.value || '').trim();
+    const category = editCategory ? editCategory.value : '';
+    const amountValue = editAmount ? parseFloat(editAmount.value) : NaN;
+
+    if (!description || !category || isNaN(amountValue) || amountValue <= 0) {
+        showToast('Please enter valid values before saving.', 'error');
+        return;
+    }
+
+    const idx = transactions.findIndex(t => t.id === editingId);
+    if (idx === -1) {
+        closeEditModal();
+        return;
+    }
+
+    transactions[idx] = {
+        ...transactions[idx],
+        type,
+        date,
+        description,
+        category,
+        amount: Math.abs(amountValue)
+    };
+
+    updateLocalStorage();
+    closeEditModal();
+    init();
+    showToast('Transaction updated.', 'success');
+}
 
 /**
  * Generates a random unique ID.
@@ -541,9 +589,6 @@ function generateID() {
 transactionForm.addEventListener('submit', addTransaction);
 budgetForm.addEventListener('submit', saveBudgets);
 transactionList.addEventListener('click', handleTransactionClick);
-if (cancelEditBtn) {
-    cancelEditBtn.addEventListener('click', exitEditMode);
-}
 // Filter/sort listeners
 if (searchInput) searchInput.addEventListener('input', renderTransactions);
 if (filterType) filterType.addEventListener('change', renderTransactions);
@@ -568,6 +613,32 @@ if (typeof desktopCardsQuery.addEventListener === 'function') {
 } else if (typeof desktopCardsQuery.addListener === 'function') {
     desktopCardsQuery.addListener(event => {
         syncTransactionCardExpansion(event.matches);
+    });
+}
+
+if (editForm) {
+    editForm.addEventListener('submit', handleEditFormSubmit);
+}
+
+if (modalDismissTriggers && modalDismissTriggers.length) {
+    modalDismissTriggers.forEach(trigger => {
+        trigger.addEventListener('click', () => {
+            closeEditModal();
+        });
+    });
+}
+
+if (editModal) {
+    editModal.addEventListener('click', event => {
+        if (event.target === editModal) {
+            closeEditModal();
+        }
+    });
+
+    document.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && editModal.classList.contains('active')) {
+            closeEditModal();
+        }
     });
 }
 

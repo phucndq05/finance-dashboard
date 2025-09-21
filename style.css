@@ -729,7 +729,131 @@ body.dark .transaction-amount { color: #f8fafc; }
 
 
 /* ==========================================================================
-   11. Responsive Layout
+   11. Modal Dialog
+   ========================================================================== */
+
+.modal {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}
+
+.modal.active {
+    display: flex;
+}
+
+.modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(4px);
+}
+
+.modal-content {
+    position: relative;
+    width: min(540px, 90vw);
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 30px 54px rgba(15, 23, 42, 0.45);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px 10px;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+    gap: 14px;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.3rem;
+    color: #1e293b;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.modal-header .fas {
+    margin: 0;
+}
+
+.modal-close {
+    background: transparent;
+    border: none;
+    font-size: 1.2rem;
+    color: #64748b;
+    cursor: pointer;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.modal-close:hover {
+    color: #1d4ed8;
+    transform: scale(1.05);
+}
+
+.modal-body {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.modal-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 18px;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+body.dark .modal-content {
+    background: #1f2937;
+    box-shadow: 0 30px 54px rgba(2, 6, 23, 0.7);
+}
+
+body.dark .modal-header {
+    border-bottom-color: rgba(148, 163, 184, 0.25);
+}
+
+body.dark .modal-header h2 {
+    color: #f8fafc;
+}
+
+body.dark .modal-close {
+    color: #cbd5f5;
+}
+
+body.dark .modal-close:hover {
+    color: #60a5fa;
+}
+
+body.dark .modal-body {
+    color: #e2e8f0;
+}
+
+body.dark .modal-footer .btn-secondary {
+    background-color: #475569;
+}
+
+body.dark .modal-footer .btn-secondary:hover {
+    background-color: #334155;
+}
+
+
+/* ==========================================================================
+   12. Responsive Layout
    ========================================================================== */
 
 @media (max-width: 1024px) {
