@@ -47,6 +47,35 @@
                 </div>
             </section>
 
+            <section class="charts-section">
+                <div class="chart-card">
+                    <header>
+                        <h2><i class="fas fa-chart-pie"></i> Expense Breakdown</h2>
+                    </header>
+                    <div class="chart-body">
+                        <canvas id="expense-category-chart" aria-label="Chart showing expenses by category" role="img"></canvas>
+                        <div class="chart-empty" data-chart-empty="expense-category-chart">
+                            <i class="fas fa-circle-plus"></i>
+                            <p>Add some expenses to see this chart.</p>
+                        </div>
+                    </div>
+                    <ul class="chart-legend" data-chart-legend="expense-category-chart"></ul>
+                </div>
+                <div class="chart-card">
+                    <header>
+                        <h2><i class="fas fa-chart-column"></i> Income vs Expense</h2>
+                    </header>
+                    <div class="chart-body">
+                        <canvas id="income-expense-chart" aria-label="Chart comparing total income and expenses" role="img"></canvas>
+                        <div class="chart-empty" data-chart-empty="income-expense-chart">
+                            <i class="fas fa-arrow-trend-up"></i>
+                            <p>Add income and expenses to compare totals.</p>
+                        </div>
+                    </div>
+                    <ul class="chart-legend" data-chart-legend="income-expense-chart"></ul>
+                </div>
+            </section>
+
             <section class="budget-container">
                 <h2><i class="fas fa-bullseye"></i> Monthly Budgets</h2>
                 <form id="budget-form">
@@ -260,6 +289,7 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js" integrity="sha384-M9sHLAb4oicG38GZCEsgOn+3HV+abHyXNc1JgJ6YGC7XnlR5/TudmtaK45IFmMlm" crossorigin="anonymous"></script>
     <script src="script.js"></script>
 </body>
 

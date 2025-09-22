@@ -42,6 +42,8 @@ const savedBudgets = JSON.parse(localStorage.getItem('budgets'));
 let budgets = savedBudgets || {};
 let editingId = null; // Track currently edited transaction id
 let lastFocusedElement = null;
+let expenseByCategoryChart = null;
+let incomeExpenseChart = null;
 
 // ==========================================================================
 // 2.1 Formatting helpers (locale currency)
@@ -169,6 +171,7 @@ function setCurrency(currencyCode) {
     applyCurrencyToBudgetInputs();
     updateSummary();
     renderTransactions();
+    updateCharts();
 }
 
 /**
@@ -263,6 +266,312 @@ function updateSummary() {
     balanceDisplay.innerText = formatCurrency(balance);
     incomeDisplay.innerText = `+${formatCurrency(totalIncome)}`;
     expenseDisplay.innerText = `-${formatCurrency(totalExpense)}`;
+}
+
+const CHART_PALETTE = [
+    '#a5b4fc', '#f9a8d4', '#fcd0ba', '#bbf7d0', '#bfdbfe',
+    '#fde68a', '#c7d2fe', '#fbcfe8', '#fecdd3', '#bae6fd'
+];
+const BAR_SERIES = [
+    { label: 'Income', fill: 'rgba(134, 239, 172, 0.85)', border: 'rgba(34, 197, 94, 0.9)' },
+    { label: 'Expense', fill: 'rgba(252, 165, 165, 0.85)', border: 'rgba(248, 113, 113, 0.9)' }
+];
+
+function toggleChartEmptyState(chartId, isEmpty) {
+    const emptyEl = document.querySelector(`[data-chart-empty="${chartId}"]`);
+    if (!emptyEl) return;
+    emptyEl.style.display = isEmpty ? 'flex' : 'none';
+}
+
+function updateChartLegend(chartId, entries) {
+    const legend = document.querySelector(`[data-chart-legend="${chartId}"]`);
+    if (!legend) return;
+    legend.innerHTML = '';
+    if (!entries || !entries.length) {
+        legend.classList.remove('show');
+        return;
+    }
+    legend.classList.add('show');
+    entries.forEach(entry => {
+        const li = document.createElement('li');
+        const swatch = document.createElement('span');
+        swatch.className = 'legend-swatch';
+        swatch.style.setProperty('--swatch-color', entry.color);
+        const text = document.createElement('span');
+        text.textContent = entry.value != null ? `${entry.label}: ${formatCurrency(entry.value)}` : entry.label;
+        li.appendChild(swatch);
+        li.appendChild(text);
+        legend.appendChild(li);
+    });
+}
+
+function getCanvasContext(canvas) {
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return null;
+    const ratio = window.devicePixelRatio || 1;
+    const width = canvas.clientWidth || canvas.width || 320;
+    const height = canvas.clientHeight || canvas.height || 240;
+    const scaledWidth = width * ratio;
+    const scaledHeight = height * ratio;
+    if (canvas.width !== scaledWidth || canvas.height !== scaledHeight) {
+        canvas.width = scaledWidth;
+        canvas.height = scaledHeight;
+    }
+    if (ctx.resetTransform) ctx.resetTransform();
+    ctx.scale(ratio, ratio);
+    ctx.clearRect(0, 0, width, height);
+    return { ctx, width, height };
+}
+
+function renderExpenseCategoryFallback(canvas, data, colors) {
+    const meta = getCanvasContext(canvas);
+    if (!meta) return;
+    const { ctx, width, height } = meta;
+    const total = data.reduce((sum, value) => sum + value, 0);
+    if (total <= 0) return;
+
+    const cx = width / 2;
+    const cy = height / 2;
+    const radius = Math.min(width, height) / 2 - 20;
+    let start = -Math.PI / 2;
+
+    data.forEach((value, idx) => {
+        const slice = (value / total) * Math.PI * 2;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, radius, start, start + slice);
+        ctx.closePath();
+        ctx.fillStyle = colors[idx % colors.length];
+        ctx.fill();
+        start += slice;
+    });
+
+    const textColor = document.body.classList.contains('dark') ? '#e2e8f0' : '#334155';
+    ctx.fillStyle = textColor;
+    ctx.font = '600 16px "Segoe UI", Tahoma, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('Total', cx, cy - 14);
+    ctx.font = '700 18px "Segoe UI", Tahoma, sans-serif';
+    ctx.fillText(formatCurrency(total), cx, cy + 14);
+}
+
+function renderIncomeExpenseFallback(canvas, labels, dataset) {
+    const meta = getCanvasContext(canvas);
+    if (!meta) return;
+    const { ctx, width, height } = meta;
+    const maxValue = Math.max(...dataset);
+    if (maxValue <= 0) return;
+
+    const padding = 32;
+    const axisColor = document.body.classList.contains('dark') ? 'rgba(148, 163, 184, 0.4)' : 'rgba(100, 116, 139, 0.4)';
+    const textColor = document.body.classList.contains('dark') ? '#e2e8f0' : '#1f2937';
+    const fillColors = BAR_SERIES.map(series => series.fill);
+    const strokeColors = BAR_SERIES.map(series => series.border);
+
+    ctx.strokeStyle = axisColor;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(padding, height - padding);
+    ctx.lineTo(width - padding + 12, height - padding);
+    ctx.stroke();
+
+    const availableWidth = width - padding * 2;
+    const barWidth = Math.min(120, availableWidth / (dataset.length * 1.8));
+    const gap = (availableWidth - barWidth * dataset.length) / (dataset.length + 1);
+    const chartHeight = height - padding * 2;
+
+    dataset.forEach((value, idx) => {
+        const barHeight = (value / maxValue) * chartHeight;
+        const x = padding + gap * (idx + 1) + barWidth * idx;
+        const y = height - padding - barHeight;
+
+        ctx.fillStyle = fillColors[idx % fillColors.length];
+        ctx.strokeStyle = strokeColors[idx % strokeColors.length];
+        ctx.lineWidth = 2;
+        if (ctx.roundRect) {
+            ctx.beginPath();
+            ctx.roundRect(x, y, barWidth, barHeight, 10);
+            ctx.fill();
+            ctx.stroke();
+        } else {
+            ctx.fillRect(x, y, barWidth, barHeight);
+            ctx.strokeRect(x, y, barWidth, barHeight);
+        }
+
+        ctx.fillStyle = textColor;
+        ctx.font = '600 14px "Segoe UI", Tahoma, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(labels[idx], x + barWidth / 2, height - padding + 18);
+        ctx.font = '700 14px "Segoe UI", Tahoma, sans-serif';
+        ctx.fillText(formatCurrency(value), x + barWidth / 2, y - 12);
+    });
+}
+
+function getExpenseCategorySummary() {
+    const summary = transactions
+        .filter(t => t.type === 'expense')
+        .reduce((acc, transaction) => {
+            const key = transaction.category || 'Uncategorized';
+            acc[key] = (acc[key] || 0) + transaction.amount;
+            return acc;
+        }, {});
+
+    const labels = Object.keys(summary);
+    const data = labels.map(label => summary[label]);
+    return { labels, data };
+}
+
+function refreshExpenseCategoryChart() {
+    const canvas = document.getElementById('expense-category-chart');
+    if (!canvas) return;
+
+    const { labels, data } = getExpenseCategorySummary();
+    const hasData = labels.length > 0;
+    const chartLabels = hasData ? labels : ['No expenses yet'];
+    const chartData = hasData ? data : [0];
+    const colors = hasData
+        ? chartLabels.map((_, idx) => CHART_PALETTE[idx % CHART_PALETTE.length])
+        : ['#d1d5db'];
+
+    toggleChartEmptyState('expense-category-chart', !hasData);
+    updateChartLegend('expense-category-chart', hasData ? chartLabels.map((label, idx) => ({
+        label,
+        color: colors[idx % colors.length],
+        value: chartData[idx]
+    })) : []);
+
+    if (typeof Chart === 'undefined') {
+        renderExpenseCategoryFallback(canvas, chartData, colors);
+        return;
+    }
+
+    if (expenseByCategoryChart) {
+        expenseByCategoryChart.data.labels = chartLabels;
+        expenseByCategoryChart.data.datasets[0].data = chartData;
+        expenseByCategoryChart.data.datasets[0].backgroundColor = colors;
+        expenseByCategoryChart.options.plugins.legend.display = false;
+        expenseByCategoryChart.options.plugins.tooltip.enabled = hasData;
+        expenseByCategoryChart.update();
+        return;
+    }
+
+    expenseByCategoryChart = new Chart(canvas, {
+        type: 'doughnut',
+        data: {
+            labels: chartLabels,
+            datasets: [
+                {
+                    data: chartData,
+                    backgroundColor: colors,
+                    borderWidth: 0,
+                    hoverOffset: 6
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    enabled: hasData,
+                    callbacks: {
+                        label: context => {
+                            const label = context.label || '';
+                            const value = context.parsed || 0;
+                            return `${label}: ${formatCurrency(value)}`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+function refreshIncomeExpenseChart() {
+    const canvas = document.getElementById('income-expense-chart');
+    if (!canvas) return;
+
+    const totalIncome = transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+    const totalExpense = transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+
+    const labels = ['Income', 'Expense'];
+    const dataset = [totalIncome, totalExpense];
+    const hasData = dataset.some(value => value > 0);
+
+    toggleChartEmptyState('income-expense-chart', !hasData);
+    updateChartLegend('income-expense-chart', hasData ? BAR_SERIES.map((series, idx) => ({
+        label: series.label,
+        color: series.fill,
+        value: dataset[idx]
+    })) : []);
+
+    if (typeof Chart === 'undefined') {
+        renderIncomeExpenseFallback(canvas, labels, dataset);
+        return;
+    }
+
+    if (incomeExpenseChart) {
+        incomeExpenseChart.data.datasets[0].data = dataset;
+        incomeExpenseChart.update();
+        return;
+    }
+
+    incomeExpenseChart = new Chart(canvas, {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [
+                {
+                label: 'Amount',
+                data: dataset,
+                backgroundColor: BAR_SERIES.map(series => series.fill),
+                borderColor: BAR_SERIES.map(series => series.border),
+                borderWidth: 1,
+                borderRadius: 10,
+                maxBarThickness: 64
+            }
+        ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: context => `${context.label}: ${formatCurrency(context.parsed.y)}`
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: value => formatCurrency(value)
+                    },
+                    grid: {
+                        color: 'rgba(148, 163, 184, 0.2)'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+}
+
+function updateCharts() {
+    refreshExpenseCategoryChart();
+    refreshIncomeExpenseChart();
 }
 
 
@@ -419,6 +728,7 @@ function init() {
     updateSummary();
     loadBudgets();
     updateBudgetProgress();
+    updateCharts();
 }
 
 // ==========================================================================
@@ -652,6 +962,7 @@ init();
     if (saved === 'dark') {
         document.body.classList.add('dark');
         updateThemeToggleIcon();
+        updateCharts();
     }
 })();
 
@@ -678,5 +989,6 @@ if (themeToggle) {
         const isDark = document.body.classList.contains('dark');
         localStorage.setItem('theme', isDark ? 'dark' : 'light');
         updateThemeToggleIcon();
+        updateCharts();
     });
 }
