@@ -44,6 +44,7 @@ let editingId = null; // Track currently edited transaction id
 let lastFocusedElement = null;
 let expenseByCategoryChart = null;
 let incomeExpenseChart = null;
+const exportButton = document.getElementById('export-csv');
 
 // ==========================================================================
 // 2.1 Formatting helpers (locale currency)
@@ -574,6 +575,50 @@ function updateCharts() {
     refreshIncomeExpenseChart();
 }
 
+function transactionsToCSV(rows) {
+    const header = ['ID', 'Type', 'Date', 'Description', 'Category', 'Amount'];
+    const lines = [header.join(',')];
+    rows.forEach(row => {
+        const cells = [
+            row.id,
+            row.type,
+            row.date || '',
+            row.description ? row.description.replace(/"/g, '""') : '',
+            row.category || '',
+            row.amount
+        ];
+        const escaped = cells.map(value => {
+            const cell = `${value ?? ''}`;
+            return /[",\n]/.test(cell) ? `"${cell.replace(/"/g, '""')}"` : cell;
+        });
+        lines.push(escaped.join(','));
+    });
+    return lines.join('\n');
+}
+
+function downloadCSV(content, filename) {
+    const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+}
+
+function handleExportCSV() {
+    if (!transactions.length) {
+        showToast('Add a transaction before exporting.', 'warn');
+        return;
+    }
+    const csv = transactionsToCSV(transactions);
+    const timestamp = new Date().toISOString().replace(/[:T]/g, '-').split('.')[0];
+    downloadCSV(csv, `finance-transactions-${timestamp}.csv`);
+    showToast('Transactions exported as CSV.', 'success');
+}
+
 
 /**
  * Adds a single transaction object to the DOM list.
@@ -936,6 +981,10 @@ if (modalDismissTriggers && modalDismissTriggers.length) {
             closeEditModal();
         });
     });
+}
+
+if (exportButton) {
+    exportButton.addEventListener('click', handleExportCSV);
 }
 
 if (editModal) {
