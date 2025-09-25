@@ -89,6 +89,56 @@ const CURRENCY_SETTINGS = {
         maximumFractionDigits: 0,
         placeholder: '0',
         step: '1'
+    },
+    EUR: {
+        code: 'EUR',
+        label: 'EUR - Euro',
+        locale: 'de-DE',
+        symbol: '€',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+        placeholder: '0.00',
+        step: '0.01'
+    },
+    GBP: {
+        code: 'GBP',
+        label: 'GBP - British Pound',
+        locale: 'en-GB',
+        symbol: '£',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+        placeholder: '0.00',
+        step: '0.01'
+    },
+    AUD: {
+        code: 'AUD',
+        label: 'AUD - Australian Dollar',
+        locale: 'en-AU',
+        symbol: '$',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+        placeholder: '0.00',
+        step: '0.01'
+    },
+    CAD: {
+        code: 'CAD',
+        label: 'CAD - Canadian Dollar',
+        locale: 'en-CA',
+        symbol: '$',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+        placeholder: '0.00',
+        step: '0.01'
+    },
+    SGD: {
+        code: 'SGD',
+        label: 'SGD - Singapore Dollar',
+        locale: 'en-SG',
+        symbol: '$',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+        placeholder: '0.00',
+        step: '0.01'
     }
 };
 
